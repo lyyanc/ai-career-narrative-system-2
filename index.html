@@ -1,0 +1,2299 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="author" content="新北市立鶯歌工商　顏龍源、盧淑惠">
+<meta name="description" content="AI 職涯敘事生成系統：整合 MBTI、RIASEC 與真實任務偏好，生成結構型、故事型、文化型三種版本的職涯敘事，並對接技術型高中 6 大類 15 群 94 專業類科。生成可能，而非定義未來。">
+<meta name="keywords" content="職涯探索,職業試探,技術型高中,群科,MBTI,RIASEC,霍蘭德,生涯輔導,技職教育">
+<meta name="robots" content="index,follow">
+
+<meta property="og:type" content="website">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:site_name" content="職涯敘事製圖所">
+<meta property="og:title" content="生成可能，而非定義未來｜AI 職涯敘事生成系統">
+<meta property="og:description" content="MBTI × RIASEC × 真實任務偏好，生成三種版本的自我敘事，對接技高 6 類 15 群 94 專業類科。不登入、不上傳、不儲存。">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="生成可能，而非定義未來｜AI 職涯敘事生成系統">
+<meta name="twitter:description" content="MBTI × RIASEC × 真實任務偏好，生成三種版本的自我敘事，對接技高 6 類 15 群 94 專業類科。">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Ctext%20y='.9em'%20font-size='88'%3E%F0%9F%93%90%3C/text%3E%3C/svg%3E">
+<style>
+/* 基礎重置（獨立部署用；Artifact 版由平台注入） */
+*,*::before,*::after{box-sizing:border-box}
+img{max-width:100%;height:auto}
+[hidden]{display:none!important}
+</style>
+<title>職涯敘事製圖所｜AI 職涯敘事生成系統</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@600;700;900&display=swap">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --bg:#E7ECF1; --sheet:#FBFCFD; --sheet-2:#EFF3F7; --sheet-3:#E3E9EF;
+  --ink:#0E2138; --ink-soft:#4A6076; --ink-faint:#8295A7;
+  --rule:#C6D1DC; --rule-strong:#94A7B9;
+  --accent:#C8440D; --accent-ink:#fff; --accent-soft:#FAE4D9;
+  --blue:#12578E; --blue-soft:#DDE9F4;
+  --green:#0F6E51; --green-soft:#D9EDE6;
+  --violet:#5E3B9B; --violet-soft:#E8E0F5;
+  --grid:rgba(20,60,100,.075);
+  --shadow:0 1px 0 rgba(14,33,56,.06), 0 10px 30px -18px rgba(14,33,56,.45);
+  --f-display:"Noto Serif TC", "Songti TC", serif;
+  --f-body:"Noto Sans TC", -apple-system, "Segoe UI", "PingFang TC", sans-serif;
+  --f-mono:"IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  --maxw:1180px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0A1522; --sheet:#101F30; --sheet-2:#152A3E; --sheet-3:#1B3348;
+    --ink:#DFE9F2; --ink-soft:#A3B7CA; --ink-faint:#748F99;
+    --rule:#27415B; --rule-strong:#3E6084;
+    --accent:#FF8146; --accent-ink:#1E0E06; --accent-soft:rgba(255,129,70,.16);
+    --blue:#5CA9EC; --blue-soft:rgba(92,169,236,.15);
+    --green:#3FC095; --green-soft:rgba(63,192,149,.15);
+    --violet:#AA8AEE; --violet-soft:rgba(170,138,238,.16);
+    --grid:rgba(150,196,240,.06);
+    --shadow:0 1px 0 rgba(0,0,0,.3), 0 14px 34px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0A1522; --sheet:#101F30; --sheet-2:#152A3E; --sheet-3:#1B3348;
+  --ink:#DFE9F2; --ink-soft:#A3B7CA; --ink-faint:#7A8F9F;
+  --rule:#27415B; --rule-strong:#3E6084;
+  --accent:#FF8146; --accent-ink:#1E0E06; --accent-soft:rgba(255,129,70,.16);
+  --blue:#5CA9EC; --blue-soft:rgba(92,169,236,.15);
+  --green:#3FC095; --green-soft:rgba(63,192,149,.15);
+  --violet:#AA8AEE; --violet-soft:rgba(170,138,238,.16);
+  --grid:rgba(150,196,240,.06);
+  --shadow:0 1px 0 rgba(0,0,0,.3), 0 14px 34px -20px rgba(0,0,0,.9);
+}
+
+/* ============ BASE ============ */
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:var(--f-body); font-size:16px; line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size:26px 26px;
+}
+h1,h2,h3,h4{margin:0; text-wrap:balance; font-weight:900; letter-spacing:-.01em}
+p{margin:0}
+a{color:inherit}
+button{font:inherit; color:inherit; cursor:pointer}
+input,select,textarea{font:inherit; color:inherit}
+:focus-visible{outline:2.5px solid var(--accent); outline-offset:3px; border-radius:2px}
+.wrap{max-width:var(--maxw); margin-inline:auto; padding-inline:22px}
+.mono{font-family:var(--f-mono)}
+.tnum{font-variant-numeric:tabular-nums}
+.sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+
+/* ============ SHEET ============ */
+.sheet{background:var(--sheet); border:1px solid var(--rule); box-shadow:var(--shadow); position:relative}
+.tblock{
+  display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  padding:9px 16px; border-bottom:1px solid var(--rule); background:var(--sheet-2);
+  font-family:var(--f-mono); font-size:11.5px; letter-spacing:.09em;
+  text-transform:uppercase; color:var(--ink-faint);
+}
+.tblock b{color:var(--ink); font-weight:600; letter-spacing:.06em}
+.tblock .sp{margin-left:auto}
+.sp{margin-left:auto}
+.eyebrow{
+  font-family:var(--f-mono); font-size:11.5px; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--accent); font-weight:600; display:block;
+}
+
+/* ============ NAV ============ */
+.nav{
+  position:sticky; top:0; z-index:60; background:var(--bg);
+  border-bottom:1px solid var(--rule);
+}
+.nav-in{display:flex; align-items:center; gap:20px; min-height:60px}
+.brand{display:flex; align-items:center; gap:11px; text-decoration:none; flex-shrink:0}
+.brand-mk{
+  width:32px; height:32px; flex-shrink:0; border:1.5px solid var(--accent);
+  display:grid; place-items:center; color:var(--accent);
+  font-family:var(--f-mono); font-size:12px; font-weight:600;
+}
+.brand-tx{display:flex; flex-direction:column; line-height:1.2}
+.brand-tx b{font-size:15px; font-weight:900}
+.brand-tx span{font-family:var(--f-mono); font-size:9px; letter-spacing:.14em; color:var(--ink-faint); text-transform:uppercase}
+.nav-links{display:flex; gap:2px; margin-left:auto; align-items:center; flex-wrap:wrap}
+.nav-links a{
+  text-decoration:none; font-size:13.5px; font-weight:500; padding:7px 11px;
+  color:var(--ink-soft); border-radius:2px;
+}
+.nav-links a:hover{color:var(--ink); background:var(--sheet-3)}
+.nav-links a.nav-cta{
+  background:var(--accent); color:var(--accent-ink); font-weight:700;
+  padding:8px 15px; margin-left:6px;
+}
+.nav-links a.nav-cta:hover{background:var(--accent); filter:brightness(1.1)}
+.themetog{
+  background:transparent; border:1px solid var(--rule); width:34px; height:34px;
+  border-radius:2px; display:grid; place-items:center; font-size:14px; margin-left:6px;
+}
+.themetog:hover{border-color:var(--rule-strong)}
+
+/* ============ HERO ============ */
+.hero{padding:52px 0 44px}
+.hero-grid{display:grid; grid-template-columns:1.06fr .94fr; gap:44px; align-items:center}
+.hero h1{
+  font-family:var(--f-display); font-size:clamp(36px,5.4vw,64px); line-height:1.14;
+  font-weight:900; letter-spacing:-.02em; margin:15px 0 0;
+}
+.hero h1 em{font-style:normal; color:var(--accent)}
+.hero-lede{margin-top:20px; font-size:16.5px; color:var(--ink-soft); max-width:44ch}
+.hero-btns{display:flex; gap:11px; flex-wrap:wrap; margin-top:26px}
+.btn{
+  display:inline-flex; align-items:center; gap:9px; padding:12px 20px;
+  border:1.5px solid var(--ink); background:transparent; border-radius:2px;
+  font-weight:700; font-size:14.5px; text-decoration:none; transition:background .16s, filter .16s;
+}
+.btn:hover{background:var(--sheet-3)}
+.btn-pri{background:var(--accent); border-color:var(--accent); color:var(--accent-ink)}
+.btn-pri:hover{filter:brightness(1.1); background:var(--accent)}
+.btn-sm{padding:9px 14px; font-size:13px; border-width:1.2px}
+.btn:disabled{opacity:.38; cursor:not-allowed}
+.btn:disabled:hover{background:transparent}
+.hero-stats{display:flex; margin-top:32px; border-top:1px solid var(--rule); flex-wrap:wrap}
+.hero-stats div{padding:14px 22px 2px 0; margin-right:22px; border-right:1px solid var(--rule)}
+.hero-stats div:last-child{border-right:none; margin-right:0}
+.hero-stats b{display:block; font-family:var(--f-mono); font-size:25px; font-weight:600; line-height:1.1; color:var(--accent)}
+.hero-stats span{font-size:12px; color:var(--ink-faint)}
+.plot-wrap{position:relative}
+.plot-cap{
+  position:absolute; left:16px; bottom:13px; font-family:var(--f-mono); font-size:9.5px;
+  letter-spacing:.14em; text-transform:uppercase; color:var(--ink-faint);
+}
+.hexsvg{display:block; width:100%; height:auto}
+
+/* ============ SECTIONS ============ */
+.sec{padding:58px 0; scroll-margin-top:70px}
+.sec-hd{margin-bottom:30px; max-width:64ch}
+.sec-hd h2{font-family:var(--f-display); font-size:clamp(25px,3.3vw,37px); line-height:1.26; margin-top:12px}
+.sec-hd p{margin-top:14px; color:var(--ink-soft); font-size:15.5px}
+
+/* ============ ENGINE ============ */
+.eng{display:grid; grid-template-columns:1fr auto 1fr; gap:26px; align-items:center}
+.eng-col{display:flex; flex-direction:column; gap:14px}
+.eng-card{padding:17px 19px; background:var(--sheet); border:1px solid var(--rule); border-left:4px solid var(--c); box-shadow:var(--shadow)}
+.eng-card h4{font-size:16px; display:flex; align-items:baseline; gap:9px; flex-wrap:wrap}
+.eng-card h4 i{font-family:var(--f-mono); font-style:normal; font-size:10px; letter-spacing:.12em; color:var(--c); font-weight:600}
+.eng-card p{margin-top:7px; font-size:13.5px; color:var(--ink-soft); line-height:1.7}
+.eng-core{
+  width:180px; height:180px; border-radius:50%; background:var(--accent); color:var(--accent-ink);
+  display:grid; place-content:center; text-align:center; padding:16px; position:relative; margin:22px;
+}
+.eng-core::after{content:""; position:absolute; inset:-20px; border:1.5px dashed var(--accent); border-radius:50%; opacity:.5}
+.eng-core b{display:block; font-family:var(--f-mono); font-size:19px; font-weight:600}
+.eng-core strong{display:block; font-size:16px; font-weight:900; margin-top:2px}
+.eng-core span{display:block; font-size:11px; margin-top:9px; line-height:1.6; opacity:.93}
+.eng-note{
+  margin-top:24px; padding:15px 18px; border:1px dashed var(--rule-strong);
+  background:var(--violet-soft); font-size:13.5px; color:var(--ink-soft); line-height:1.75;
+}
+.eng-note b{color:var(--violet)}
+
+/* ============ WORKBENCH ============ */
+.wb{background:var(--sheet); border:1px solid var(--rule); box-shadow:var(--shadow)}
+.steps{display:flex; border-bottom:1px solid var(--rule); overflow-x:auto}
+.step{
+  flex:1 1 0; min-width:128px; padding:12px 14px; background:var(--sheet-2);
+  border:none; border-right:1px solid var(--rule); border-top:3px solid transparent;
+  text-align:left; display:flex; flex-direction:column; gap:2px; transition:background .16s;
+}
+.step:last-child{border-right:none}
+.step i{font-family:var(--f-mono); font-style:normal; font-size:10px; letter-spacing:.13em; color:var(--ink-faint)}
+.step b{font-size:13.5px; font-weight:700; color:var(--ink-soft)}
+.step[aria-current="true"]{background:var(--sheet); border-top-color:var(--accent)}
+.step[aria-current="true"] b{color:var(--ink)}
+.step[aria-current="true"] i{color:var(--accent)}
+.step.done i::after{content:" ✓"; color:var(--green)}
+.wb-body{padding:30px 30px 26px}
+.wb-h{font-family:var(--f-display); font-size:25px; margin-bottom:7px}
+.wb-sub{color:var(--ink-soft); font-size:14.5px; margin-bottom:22px; max-width:64ch; line-height:1.75}
+.wb-foot{display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding:15px 30px; border-top:1px solid var(--rule); background:var(--sheet-2)}
+.wb-foot .sp{margin-left:auto}
+.prog{flex:1 1 180px; max-width:270px}
+.prog-bar{height:5px; background:var(--sheet-3); border:1px solid var(--rule); overflow:hidden}
+.prog-bar i{display:block; height:100%; background:var(--accent); width:0%; transition:width .3s}
+.prog-tx{font-family:var(--f-mono); font-size:11px; color:var(--ink-faint); margin-top:5px; letter-spacing:.05em}
+
+/* form */
+.fgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:18px; max-width:780px}
+.fld{display:flex; flex-direction:column; gap:6px}
+.fld > label{font-family:var(--f-mono); font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-faint)}
+.fld > label span{color:var(--accent)}
+.fld input,.fld select{padding:11px 13px; background:var(--sheet-2); border:1px solid var(--rule); border-radius:2px; font-size:15px; width:100%}
+.fld input:focus,.fld select:focus{border-color:var(--accent); background:var(--sheet)}
+.fld small{font-size:11.5px; color:var(--ink-faint); line-height:1.55}
+.chips{display:flex; gap:8px; flex-wrap:wrap}
+.chip{padding:9px 15px; border:1px solid var(--rule); background:var(--sheet-2); border-radius:2px; font-size:14px; transition:.14s}
+.chip[aria-pressed="true"]{background:var(--ink); color:var(--bg); border-color:var(--ink); font-weight:700}
+.chip:hover{border-color:var(--rule-strong)}
+.privacy{margin-top:26px; padding:15px 18px; border:1px dashed var(--rule-strong); background:var(--sheet-2); font-size:13px; color:var(--ink-soft); max-width:780px; line-height:1.8}
+.privacy b{color:var(--ink)}
+
+/* likert */
+.qlist{display:flex; flex-direction:column; border-top:1px solid var(--rule)}
+.q{display:grid; grid-template-columns:1fr auto; gap:10px 22px; align-items:center; padding:12px 6px; border-bottom:1px solid var(--rule)}
+.q.alt{background:var(--sheet-2)}
+.q-tx{font-size:14.8px; line-height:1.65; display:flex; gap:11px}
+.q-tx i{font-family:var(--f-mono); font-style:normal; color:var(--ink-faint); font-size:11.5px; padding-top:3px; min-width:24px}
+.scale{display:flex; gap:5px}
+.scale button{
+  width:36px; height:36px; border:1px solid var(--rule); background:var(--sheet); border-radius:50%;
+  font-family:var(--f-mono); font-size:12px; color:var(--ink-faint); display:grid; place-items:center; transition:.13s;
+}
+.scale button:hover{border-color:var(--accent); color:var(--accent)}
+.scale button[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:var(--accent-ink); font-weight:600}
+.scale-key{display:flex; justify-content:space-between; gap:12px; font-family:var(--f-mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); padding:0 6px 8px}
+.qhd{display:flex; align-items:baseline; gap:11px; padding:22px 6px 8px; font-family:var(--f-mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); border-bottom:1px solid var(--rule)}
+.qhd span{color:var(--ink-faint); letter-spacing:.02em; text-transform:none; font-size:12px}
+.hint{margin-top:18px; font-size:13px; color:var(--ink-faint); line-height:1.7}
+.warn{color:var(--accent); font-weight:700}
+
+/* ============ RESULTS ============ */
+#result[hidden]{display:none!important}
+.rs-top{display:grid; grid-template-columns:1fr 1fr; gap:0; border-bottom:1px solid var(--rule)}
+.rs-id{padding:28px 30px; border-right:1px solid var(--rule)}
+.rs-name{font-family:var(--f-display); font-size:29px; line-height:1.3}
+.rs-meta{font-family:var(--f-mono); font-size:12px; color:var(--ink-faint); margin-top:6px; letter-spacing:.05em}
+.mbti-block{display:flex; gap:8px; margin-top:20px; flex-wrap:wrap}
+.mbti-let{
+  width:60px; padding:9px 0 8px; text-align:center; border:1.5px solid var(--ink); background:var(--sheet-2);
+}
+.mbti-let b{display:block; font-family:var(--f-mono); font-size:27px; font-weight:600; line-height:1}
+.mbti-let span{display:block; font-size:10.5px; color:var(--ink-faint); margin-top:4px}
+.mbti-let i{display:block; font-family:var(--f-mono); font-style:normal; font-size:10px; color:var(--accent); margin-top:2px}
+.mbti-title{margin-top:16px; font-size:17px; font-weight:900}
+.mbti-desc{margin-top:6px; font-size:14px; color:var(--ink-soft); line-height:1.8}
+.rs-plot{padding:20px 24px; display:flex; flex-direction:column; justify-content:center}
+.riasec-bars{display:flex; flex-direction:column; gap:9px; margin-top:16px}
+.rb{display:grid; grid-template-columns:auto 1fr auto; gap:11px; align-items:center; font-size:13px}
+.rb-k{font-family:var(--f-mono); font-weight:600; font-size:12px; width:88px; color:var(--ink-soft)}
+.rb-t{height:9px; background:var(--sheet-3); border:1px solid var(--rule); position:relative; overflow:hidden}
+.rb-t i{position:absolute; inset:0 auto 0 0; background:var(--green); width:0%; transition:width .5s}
+.rb-t i.gapmark{background:var(--accent)}
+.rb-v{font-family:var(--f-mono); font-size:12px; width:38px; text-align:right; font-variant-numeric:tabular-nums}
+
+.rs-sec{padding:28px 30px; border-bottom:1px solid var(--rule)}
+.rs-sec:last-child{border-bottom:none}
+.rs-h{font-family:var(--f-display); font-size:21px; display:flex; align-items:baseline; gap:11px; flex-wrap:wrap; margin-bottom:6px}
+.rs-h i{font-family:var(--f-mono); font-style:normal; font-size:10.5px; letter-spacing:.13em; color:var(--accent); font-weight:600}
+.rs-lead{color:var(--ink-soft); font-size:14px; margin-bottom:20px; max-width:66ch; line-height:1.75}
+
+/* gap alerts */
+.gaps{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:13px}
+.gap{padding:15px 17px; border:1px solid var(--rule); border-top:3px solid var(--gc); background:var(--sheet-2)}
+.gap h5{margin:0; font-size:14.5px; font-weight:900; display:flex; gap:8px; align-items:baseline}
+.gap h5 em{font-style:normal; font-family:var(--f-mono); font-size:11px; color:var(--gc); font-weight:600}
+.gap p{margin-top:7px; font-size:13px; color:var(--ink-soft); line-height:1.75}
+.gap-none{padding:15px 17px; border:1px dashed var(--rule-strong); background:var(--green-soft); font-size:13.5px; color:var(--ink-soft); line-height:1.75}
+
+/* narrative tabs */
+.tabs{display:flex; gap:0; border:1px solid var(--rule); border-bottom:none; flex-wrap:wrap}
+.tab{
+  flex:1 1 auto; min-width:120px; padding:12px 16px; background:var(--sheet-2); border:none;
+  border-right:1px solid var(--rule); border-bottom:1px solid var(--rule); text-align:left;
+  border-top:3px solid transparent;
+}
+.tab:last-child{border-right:none}
+.tab b{display:block; font-size:14px; font-weight:700; color:var(--ink-soft)}
+.tab i{display:block; font-family:var(--f-mono); font-style:normal; font-size:9.5px; letter-spacing:.13em; color:var(--ink-faint); text-transform:uppercase}
+.tab[aria-selected="true"]{background:var(--sheet); border-top-color:var(--accent); border-bottom-color:transparent}
+.tab[aria-selected="true"] b{color:var(--ink)}
+.tab[aria-selected="true"] i{color:var(--accent)}
+.tabpanel{border:1px solid var(--rule); border-top:none; padding:24px 26px; background:var(--sheet)}
+.tabpanel[hidden]{display:none}
+.narr p{margin-bottom:14px; font-size:15.5px; line-height:2}
+.narr p:last-child{margin-bottom:0}
+.narr .lead{font-family:var(--f-display); font-size:18px; font-weight:700; line-height:1.85}
+.narr .qt{border-left:3px solid var(--accent); padding-left:16px; color:var(--ink-soft); font-size:14.5px}
+.narr strong{color:var(--accent); font-weight:700}
+.narr .disc{margin-top:18px; padding:13px 16px; background:var(--violet-soft); border:1px dashed var(--rule-strong); font-size:12.5px; color:var(--ink-soft); line-height:1.75}
+
+/* match cards */
+.matches{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px}
+.mc{background:var(--sheet-2); border:1px solid var(--rule); display:flex; flex-direction:column}
+.mc-hd{display:flex; align-items:center; gap:12px; padding:13px 16px; border-bottom:1px solid var(--rule); background:var(--sheet)}
+.mc-rank{
+  width:34px; height:34px; flex-shrink:0; display:grid; place-items:center; background:var(--accent);
+  color:var(--accent-ink); font-family:var(--f-mono); font-size:15px; font-weight:600;
+}
+.mc-hd .t{flex:1; min-width:0}
+.mc-hd b{display:block; font-size:17px; font-weight:900; line-height:1.3}
+.mc-hd span{display:block; font-family:var(--f-mono); font-size:10px; letter-spacing:.1em; color:var(--ink-faint); text-transform:uppercase}
+.mc-fit{text-align:right; flex-shrink:0}
+.mc-fit b{display:block; font-family:var(--f-mono); font-size:20px; font-weight:600; color:var(--accent); line-height:1}
+.mc-fit span{font-size:9.5px; color:var(--ink-faint); letter-spacing:.08em}
+.mc-bd{padding:15px 16px; display:flex; flex-direction:column; gap:12px; flex:1}
+.mc-why{display:flex; flex-direction:column; gap:7px}
+.mc-why li{display:flex; gap:9px; font-size:13.2px; line-height:1.7; color:var(--ink-soft)}
+.mc-why li::before{content:"▸"; color:var(--accent); flex-shrink:0}
+.mc-ke{font-size:12.5px; color:var(--ink-faint); line-height:1.7; border-top:1px dashed var(--rule); padding-top:11px}
+.mc-ke b{color:var(--ink-soft); font-weight:700}
+.mc-tags{display:flex; gap:6px; flex-wrap:wrap}
+.tag{font-family:var(--f-mono); font-size:10.5px; letter-spacing:.05em; padding:3px 8px; border:1px solid var(--rule); color:var(--ink-faint); background:var(--sheet)}
+
+/* tasks */
+.tasks{display:flex; flex-direction:column; gap:22px}
+.tgrp h5{font-size:14.5px; font-weight:900; display:flex; align-items:baseline; gap:9px; margin-bottom:9px}
+.tgrp h5 i{font-family:var(--f-mono); font-style:normal; font-size:10px; letter-spacing:.12em; color:var(--accent)}
+.tlist{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:8px}
+.tk{display:flex; gap:11px; align-items:flex-start; padding:11px 14px; border:1px solid var(--rule); background:var(--sheet-2); cursor:pointer; transition:.14s}
+.tk:hover{border-color:var(--rule-strong)}
+.tk input{margin:3px 0 0; width:17px; height:17px; accent-color:var(--accent); flex-shrink:0; cursor:pointer}
+.tk span{font-size:13.5px; line-height:1.65}
+.tk.on{background:var(--green-soft); border-color:var(--green)}
+.tk.on span{color:var(--ink)}
+.tprog{display:flex; align-items:center; gap:13px; margin-top:4px; font-family:var(--f-mono); font-size:12px; color:var(--ink-faint); flex-wrap:wrap}
+.tprog .bar{flex:1 1 150px; max-width:280px; height:6px; background:var(--sheet-3); border:1px solid var(--rule)}
+.tprog .bar i{display:block; height:100%; background:var(--green); width:0%; transition:width .3s}
+
+/* share card */
+.share-wrap{display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr); gap:22px; align-items:start}
+.scard{
+  position:relative; overflow:hidden; padding:26px 28px 22px; color:#FFF6F0;
+  background:
+    radial-gradient(120% 130% at 88% 8%, rgba(255,150,90,.32), transparent 58%),
+    linear-gradient(152deg, #16273C 0%, #0C1A2B 52%, #241222 100%);
+  border:1px solid #2C4157;
+}
+.scard::before{
+  content:""; position:absolute; inset:0; opacity:.5; pointer-events:none;
+  background-image:linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+  background-size:22px 22px;
+}
+.scard > *{position:relative}
+.sc-top{display:flex; justify-content:space-between; align-items:flex-start; gap:14px; font-family:var(--f-mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:#8FA7BD}
+.sc-top b{color:#FF8146; font-weight:600}
+.sc-name{font-family:var(--f-display); font-size:26px; font-weight:900; margin-top:18px; line-height:1.3; color:#fff}
+.sc-code{display:flex; gap:9px; align-items:baseline; margin-top:12px; flex-wrap:wrap}
+.sc-code b{font-family:var(--f-mono); font-size:31px; font-weight:600; letter-spacing:.06em; color:#FF9A62}
+.sc-code em{font-style:normal; font-family:var(--f-mono); font-size:16px; letter-spacing:.14em; color:#7FD8B4}
+.sc-grp{margin-top:18px; display:flex; flex-direction:column; gap:6px}
+.sc-grp div{display:flex; gap:10px; align-items:baseline; font-size:14.5px; color:#DCE7F1}
+.sc-grp div i{font-family:var(--f-mono); font-style:normal; font-size:11px; color:#FF8146; width:20px}
+.sc-tl{margin-top:20px; padding-top:14px; border-top:1px solid rgba(255,255,255,.16); font-family:var(--f-display); font-size:15px; color:#fff; font-weight:700}
+.sc-ft{margin-top:8px; font-family:var(--f-mono); font-size:9.5px; letter-spacing:.1em; color:#7C93A8; text-transform:uppercase}
+.share-side{display:flex; flex-direction:column; gap:12px}
+.share-tx{
+  width:100%; min-height:190px; padding:14px 16px; background:var(--sheet-2); border:1px solid var(--rule);
+  border-radius:2px; font-family:var(--f-mono); font-size:12px; line-height:1.85; resize:vertical;
+}
+/* action bar */
+.actions{display:flex; gap:11px; flex-wrap:wrap; align-items:center}
+.toast{
+  position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(140%);
+  background:var(--ink); color:var(--bg); padding:11px 20px; border-radius:2px;
+  font-size:14px; font-weight:700; z-index:200; transition:transform .3s; box-shadow:var(--shadow);
+}
+.toast.on{transform:translateX(-50%) translateY(0)}
+
+/* ============ GROUP MAP ============ */
+.filters{display:flex; gap:7px; flex-wrap:wrap; margin-bottom:20px}
+.gmap{display:grid; grid-template-columns:repeat(auto-fill,minmax(268px,1fr)); gap:14px}
+.gcard{background:var(--sheet); border:1px solid var(--rule); box-shadow:var(--shadow); display:flex; flex-direction:column}
+.gcard-hd{padding:11px 15px; border-bottom:1px solid var(--rule); background:var(--sheet-2); display:flex; align-items:center; gap:10px}
+.gcard-hd .no{font-family:var(--f-mono); font-size:10.5px; letter-spacing:.1em; color:var(--accent); font-weight:600}
+.gcard-hd .cat{font-family:var(--f-mono); font-size:10px; letter-spacing:.1em; color:var(--ink-faint); margin-left:auto}
+.gcard-bd{padding:14px 15px 16px; display:flex; flex-direction:column; gap:9px; flex:1}
+.gcard-bd h4{font-size:17px}
+.gcard-bd .ds{font-size:13px; color:var(--ink-soft); line-height:1.75}
+.gcard-bd .sk{font-size:12.3px; color:var(--ink-faint); line-height:1.7; border-top:1px dashed var(--rule); padding-top:10px; margin-top:auto}
+.gcard-bd .sk b{color:var(--ink-soft)}
+.code6{display:flex; gap:3px}
+.code6 span{
+  width:26px; height:22px; display:grid; place-items:center; font-family:var(--f-mono); font-size:10.5px;
+  border:1px solid var(--rule); color:var(--ink-faint); background:var(--sheet-2);
+}
+.code6 span.hi{background:var(--green); border-color:var(--green); color:#fff; font-weight:600}
+.code6 span.hi2{background:var(--green-soft); border-color:var(--green); color:var(--green); font-weight:600}
+
+/* ============ FAQ ============ */
+.faq{display:grid; grid-template-columns:repeat(auto-fit,minmax(310px,1fr)); gap:14px}
+.fq{background:var(--sheet); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.fq h4{font-size:15.5px; display:flex; gap:9px; align-items:baseline}
+.fq h4 i{font-family:var(--f-mono); font-style:normal; font-size:11px; color:var(--accent); font-weight:600}
+.fq p{margin-top:9px; font-size:13.5px; color:var(--ink-soft); line-height:1.8}
+
+/* ============ FOOTER ============ */
+.foot{border-top:1px solid var(--rule); background:var(--sheet); margin-top:20px}
+.foot-in{display:flex; gap:26px; flex-wrap:wrap; padding:30px 0; align-items:flex-start}
+.foot-in > div{flex:1 1 240px}
+.foot h5{font-family:var(--f-mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-faint); margin:0 0 9px; font-weight:600}
+.foot p{font-size:12.8px; color:var(--ink-soft); line-height:1.85}
+.foot-bar{border-top:1px solid var(--rule); padding:13px 0; font-family:var(--f-mono); font-size:10.5px; letter-spacing:.08em; color:var(--ink-faint); display:flex; gap:16px; flex-wrap:wrap}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width:960px){
+  .hero-grid{grid-template-columns:1fr; gap:32px}
+  .eng{grid-template-columns:1fr; gap:18px}
+  .eng-core{margin:6px auto; width:164px; height:164px}
+  .rs-top{grid-template-columns:1fr}
+  .rs-id{border-right:none; border-bottom:1px solid var(--rule)}
+  .share-wrap{grid-template-columns:1fr}
+}
+@media (max-width:720px){
+  body{font-size:15.5px}
+  .nav-in{min-height:auto; padding:10px 0; flex-wrap:wrap; gap:10px}
+  .nav-links{margin-left:0; width:100%; gap:0; overflow-x:auto; padding-bottom:2px}
+  .nav-links a{padding:6px 9px; font-size:12.5px; white-space:nowrap}
+  .nav-links a.nav-cta{margin-left:4px}
+  .hero{padding:36px 0 32px}
+  .sec{padding:44px 0}
+  .wb-body{padding:22px 18px}
+  .wb-foot{padding:14px 18px}
+  .rs-id,.rs-plot,.rs-sec{padding:22px 18px}
+  .q{grid-template-columns:1fr; gap:11px}
+  .scale{justify-content:space-between}
+  .scale button{width:44px; height:40px; border-radius:2px}
+  .scale-key{padding-bottom:6px}
+  .step{min-width:112px; padding:10px 12px}
+  .step b{font-size:12.5px}
+  .hero-stats div{padding-right:16px; margin-right:16px}
+  .tabpanel{padding:20px 17px}
+  .narr p{font-size:15px; line-height:1.95}
+}
+
+/* ============ FLOW STRIP ============ */
+.flow{border:1px solid var(--rule); background:var(--sheet); box-shadow:var(--shadow); padding:20px 22px 8px}
+.flowh{font-family:var(--f-display); font-size:19px; margin-bottom:6px}
+.flowp{font-size:13.5px; color:var(--ink-soft); margin-bottom:14px}
+.flowlist{list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fit,minmax(178px,1fr))}
+.flowlist li{padding:12px 16px 14px 0; margin-right:16px; border-right:1px solid var(--rule)}
+.flowlist li:last-child{border-right:none; margin-right:0}
+.flowlist li i{font-family:var(--f-mono); font-style:normal; font-size:10px; letter-spacing:.14em; color:var(--accent); display:block; margin-bottom:5px}
+.flowlist li b{display:block; font-size:14.5px; margin-bottom:4px}
+.flowlist li span{font-size:12.8px; color:var(--ink-soft); line-height:1.7; display:block}
+@media (max-width:720px){
+  .flowlist li{border-right:none; border-bottom:1px solid var(--rule); margin-right:0; padding-right:0}
+  .flowlist li:last-child{border-bottom:none}
+}
+
+/* ============ TOGGLE SWITCH ============ */
+.switchrow{display:flex; align-items:flex-start; gap:14px; padding:16px 18px; border:1px solid var(--violet); background:var(--violet-soft); margin-top:24px; max-width:780px}
+.switch{position:relative; flex-shrink:0; width:52px; height:29px; border:1.5px solid var(--rule-strong); background:var(--sheet-3); border-radius:15px; transition:.18s; margin-top:2px}
+.switch::after{content:""; position:absolute; top:2px; left:2px; width:21px; height:21px; border-radius:50%; background:var(--ink-faint); transition:.18s}
+.switch[aria-pressed="true"]{background:var(--violet); border-color:var(--violet)}
+.switch[aria-pressed="true"]::after{left:26px; background:#fff}
+.switchtx b{display:block; font-size:14.5px; margin-bottom:4px}
+.switchtx b em{font-style:normal; font-family:var(--f-mono); font-size:10px; letter-spacing:.12em; color:var(--violet); margin-left:8px}
+.switchtx p{font-size:12.8px; color:var(--ink-soft); line-height:1.75}
+
+/* ============ SUPER STAGE ============ */
+.stages{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:0; border:1px solid var(--rule); margin-top:4px}
+.stg{padding:13px 15px; border-right:1px solid var(--rule); background:var(--sheet-2)}
+.stg:last-child{border-right:none}
+.stg.now{background:var(--accent-soft); border-top:3px solid var(--accent)}
+.stg i{font-family:var(--f-mono); font-style:normal; font-size:10px; letter-spacing:.1em; color:var(--ink-faint); display:block}
+.stg b{display:block; font-size:14.5px; margin:3px 0 5px}
+.stg.now b{color:var(--accent)}
+.stg span{font-size:12.3px; color:var(--ink-soft); line-height:1.65; display:block}
+@media (max-width:720px){.stg{border-right:none; border-bottom:1px solid var(--rule)} .stg:last-child{border-bottom:none}}
+
+/* ============ ALERT BADGE ============ */
+.alertbar{display:flex; align-items:center; gap:12px; padding:13px 17px; border:1.5px solid var(--ac); background:var(--abg); margin-bottom:18px; flex-wrap:wrap}
+.alertbar .bdg{font-family:var(--f-mono); font-size:10.5px; letter-spacing:.12em; padding:4px 10px; background:var(--ac); color:#fff; flex-shrink:0}
+.alertbar p{font-size:13.3px; color:var(--ink-soft); line-height:1.7; flex:1 1 260px}
+.alertbar p b{color:var(--ink)}
+
+/* ============ TRANSLATOR ============ */
+.trx{border:1px solid var(--rule); margin-top:16px}
+.trx-hd{display:grid; grid-template-columns:1fr 1fr; font-family:var(--f-mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-faint); background:var(--sheet-2); border-bottom:1px solid var(--rule)}
+.trx-hd span{padding:8px 14px}
+.trx-hd span:first-child{border-right:1px solid var(--rule)}
+.trx-row{display:grid; grid-template-columns:1fr 1fr; border-bottom:1px solid var(--rule)}
+.trx-row:last-child{border-bottom:none}
+.trx-a,.trx-b{padding:12px 14px; font-size:13.2px; line-height:1.7}
+.trx-a{border-right:1px solid var(--rule); color:var(--ink-faint); text-decoration:line-through; text-decoration-color:var(--rule-strong); background:var(--sheet-2)}
+.trx-b b{color:var(--violet); display:block; margin-bottom:5px}
+.trx-b span{color:var(--ink-soft); font-size:12.5px; display:block}
+@media (max-width:720px){
+  .trx-hd{grid-template-columns:1fr} .trx-hd span:first-child{border-right:none; border-bottom:1px solid var(--rule)}
+  .trx-row{grid-template-columns:1fr} .trx-a{border-right:none; border-bottom:1px dashed var(--rule)}
+}
+
+/* ============ IMPACT ============ */
+.impact{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px}
+.imp{border:1px solid var(--rule); background:var(--sheet); box-shadow:var(--shadow); padding:17px 19px}
+.imp h5{font-size:14px; font-weight:900; margin:0 0 12px}
+.imp .barpair{display:flex; flex-direction:column; gap:9px}
+.imp .bp{display:grid; grid-template-columns:52px 1fr auto; gap:10px; align-items:center; font-size:12px}
+.imp .bp em{font-style:normal; font-family:var(--f-mono); color:var(--ink-faint); font-size:11px}
+.imp .bp .tr{height:14px; background:var(--sheet-3); border:1px solid var(--rule); position:relative}
+.imp .bp .tr i{position:absolute; inset:0 auto 0 0; background:var(--rule-strong)}
+.imp .bp.after .tr i{background:var(--accent)}
+.imp .bp strong{font-family:var(--f-mono); font-size:13px; font-variant-numeric:tabular-nums}
+.imp .note{font-size:12px; color:var(--ink-faint); margin-top:12px; line-height:1.7}
+
+/* ============ MOTION ============ */
+@keyframes drawin{from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none}}
+.anim{animation:drawin .45s ease-out both}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important; transition-duration:.001ms!important}
+}
+
+/* ============ PRINT ============ */
+@media print{
+  body{background:#fff!important; color:#000!important; font-size:11.5pt; background-image:none!important}
+  :root{--sheet:#fff; --sheet-2:#fff; --sheet-3:#fff; --ink:#000; --ink-soft:#333; --ink-faint:#666; --rule:#999; --rule-strong:#666; --accent:#000; --accent-ink:#fff; --green:#333; --shadow:none}
+  .nav,.hero,#about,#groups,#faq,#workbench,#instrument,#impact,.foot,.wb-foot,.steps,.actions,.share-side,.toast,.themetog,.noprint{display:none!important}
+  .printhd{display:block!important}
+  .sec{padding:0!important}
+  .wb,.sheet{border:1px solid #000; box-shadow:none}
+  .rs-sec{padding:14pt 0; border-bottom:1px solid #999; break-inside:avoid}
+  .matches,.gaps,.tlist{break-inside:avoid}
+  .tk{border:1px solid #666; background:#fff!important}
+  .tabpanel[hidden]{display:block!important}
+  .tabs{display:none!important}
+  .tabpanel{border:none; padding:10pt 0; break-inside:avoid}
+  .tabpanel::before{content:attr(data-print-title); display:block; font-weight:900; font-size:13pt; margin-bottom:6pt; border-bottom:1px solid #000; padding-bottom:3pt}
+  .scard{background:#fff!important; color:#000!important; border:1px solid #000}
+  .scard *{color:#000!important}
+  .sc-code b,.sc-code em{color:#000!important}
+  a{text-decoration:none}
+  .signrow{display:flex!important}
+}
+.printhd{display:none; padding:0 0 12pt; border-bottom:2px solid #000; margin-bottom:12pt}
+.printhd h1{font-size:17pt; font-family:var(--f-display)}
+.printhd p{font-family:var(--f-mono); font-size:9pt; margin-top:4pt; letter-spacing:.05em}
+.signrow{display:none; gap:30pt; margin-top:16pt; padding-top:12pt; border-top:1px solid #000; font-size:10.5pt}
+.signrow div{flex:1; border-bottom:1px solid #000; padding-bottom:22pt}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="#top">
+      <span class="brand-mk" aria-hidden="true">AI</span>
+      <span class="brand-tx"><b>職涯敘事製圖所</b><span>Career Narrative Drafting Room</span></span>
+    </a>
+    <nav class="nav-links" aria-label="主選單">
+      <a href="#about">系統理念</a>
+      <a href="#instrument">量表說明</a>
+      <a href="#groups">15 群科地圖</a>
+      <a href="#impact">導入成效</a>
+      <a href="#faq">常見問題</a>
+      <a href="#workbench" class="nav-cta">開始探索</a>
+      <button class="themetog" id="themetog" type="button" aria-label="切換深淺色主題" title="切換深淺色主題">◐</button>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ================= HERO ================= -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">六大類 · 十五群 · 九十四專業類科 &nbsp;/&nbsp; 技術型高中職涯試探</span>
+      <h1>生成可能，<br>而非<em>定義未來</em>。</h1>
+      <p class="hero-lede">
+        這裡不會告訴你「你就是這種人」。它把 MBTI 的認知節奏、RIASEC 的興趣座標，
+        以及你真正願意動手做的任務，翻譯成三種版本的自我敘事，
+        再對照技術型高中的群科制度，畫出三條值得你親自去看看的路線。
+      </p>
+      <div class="hero-btns">
+        <a class="btn btn-pri" href="#workbench">開始繪製我的職涯圖 →</a>
+        <a class="btn" href="#groups">先看 15 群科地圖</a>
+      </div>
+      <div class="hero-stats">
+        <div><b class="tnum">32</b><span>MBTI 題項</span></div>
+        <div><b class="tnum">36</b><span>RIASEC 題項</span></div>
+        <div><b class="tnum">12</b><span>真實任務題項</span></div>
+        <div><b class="tnum">0</b><span>資料上傳筆數</span></div>
+      </div>
+    </div>
+
+    <div class="sheet plot-wrap">
+      <div class="tblock"><b>Fig. 01</b><span>霍蘭德六角模型 / Holland Hexagon</span><span class="sp">比例 1:1</span></div>
+      <svg class="hexsvg" viewBox="0 0 560 460" role="img" aria-label="霍蘭德 RIASEC 六角形示範圖，六個頂點依序為實作型、研究型、藝術型、社會型、企業型、事務型">
+        <g fill="none" stroke="var(--rule)" stroke-width="1">
+          <polygon points="280,85 401,155 401,295 280,365 159,295 159,155"></polygon>
+          <polygon points="280,132 361,178 361,272 280,318 199,272 199,178"></polygon>
+          <polygon points="280,178 320,202 320,248 280,272 240,248 240,202"></polygon>
+        </g>
+        <g stroke="var(--rule)" stroke-width="1" stroke-dasharray="3 4">
+          <line x1="280" y1="225" x2="280" y2="85"></line>
+          <line x1="280" y1="225" x2="401" y2="155"></line>
+          <line x1="280" y1="225" x2="401" y2="295"></line>
+          <line x1="280" y1="225" x2="280" y2="365"></line>
+          <line x1="280" y1="225" x2="159" y2="295"></line>
+          <line x1="280" y1="225" x2="159" y2="155"></line>
+        </g>
+        <polygon class="anim" points="280,110 360,179 335,257 280,278 213,264 207,183"
+                 fill="var(--accent)" fill-opacity="0.15" stroke="var(--accent)" stroke-width="2.5"
+                 stroke-linejoin="round"></polygon>
+        <g fill="var(--accent)">
+          <circle cx="280" cy="110" r="4.5"></circle><circle cx="360" cy="179" r="4.5"></circle>
+          <circle cx="335" cy="257" r="4.5"></circle><circle cx="280" cy="278" r="4.5"></circle>
+          <circle cx="213" cy="264" r="4.5"></circle><circle cx="207" cy="183" r="4.5"></circle>
+        </g>
+        <g font-family="IBM Plex Mono, monospace" font-size="15" font-weight="600" fill="var(--ink)">
+          <text x="280" y="50" text-anchor="middle">R</text>
+          <text x="424" y="138" text-anchor="start">I</text>
+          <text x="424" y="316" text-anchor="start">A</text>
+          <text x="280" y="412" text-anchor="middle">S</text>
+          <text x="136" y="316" text-anchor="end">E</text>
+          <text x="136" y="138" text-anchor="end">C</text>
+        </g>
+        <g font-family="Noto Sans TC, sans-serif" font-size="11.5" fill="var(--ink-faint)">
+          <text x="280" y="66" text-anchor="middle">實作型</text>
+          <text x="424" y="154" text-anchor="start">研究型</text>
+          <text x="424" y="332" text-anchor="start">藝術型</text>
+          <text x="280" y="428" text-anchor="middle">社會型</text>
+          <text x="136" y="332" text-anchor="end">企業型</text>
+          <text x="136" y="154" text-anchor="end">事務型</text>
+        </g>
+        <g font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--ink-faint)">
+          <text x="286" y="182">33</text><text x="286" y="136">66</text><text x="286" y="90">100</text>
+        </g>
+      </svg>
+      <span class="plot-cap">Sample plot · 示範資料，非您的結果</span>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ABOUT ================= -->
+<section class="sec" id="about">
+  <div class="wrap">
+    <div class="sec-hd">
+      <span class="eyebrow">Fig. 02 &nbsp;/&nbsp; 三語人格整合模型</span>
+      <h2>三種語言進去，三種敘事與一張群科地圖出來。</h2>
+      <p>單一測驗最大的問題，是它把「此刻的你」寫成「未來的你」。這套系統把 AI 定位為
+        <b>職涯敘事翻譯引擎（Translation Engine）</b>，而非決策工具：每一種量表都只是一種語言，
+        引擎的工作是把它們轉譯成你聽得懂、也說得出口的敘事，然後接回真實存在的升學制度。</p>
+    </div>
+
+    <div class="eng">
+      <div class="eng-col">
+        <div class="eng-card" style="--c:var(--blue)">
+          <h4>科學語言<i>RIASEC × MBTI</i></h4>
+          <p>32 題 MBTI 四向度量表測認知風格，36 題霍蘭德量表測六大興趣權重。這兩把尺互為交叉驗證，
+            是整套系統唯一參與配對計算的資料來源。</p>
+        </div>
+        <div class="eng-card" style="--c:var(--violet)">
+          <h4>文化語言<i>文化趣味模式 · 可開關</i></h4>
+          <p>星座、生肖、血型與命理語彙。設計目的是<b>降低家長與學生的開口門檻</b>，作為初始參與的文化入口，
+            並把命理焦慮轉譯成教育策略。<b>不參與任何配對計算</b>，各校可依校風自行關閉。</p>
+        </div>
+        <div class="eng-card" style="--c:var(--green)">
+          <h4>生涯語言<i>Super 生涯發展理論</i></h4>
+          <p>把命理的「流年」概念，替換成 Super 的生涯發展階段。系統依你的年齡定位所處階段，
+            說明為什麼九年級的「還沒決定」是正常的，而不是落後。</p>
+        </div>
+      </div>
+
+      <div class="eng-core">
+        <b>AI Agents</b>
+        <strong>敘事與推理引擎</strong>
+        <span>將多元人格語言轉譯<br>對接 6 類 15 群 94 科</span>
+      </div>
+
+      <div class="eng-col">
+        <div class="eng-card" style="--c:var(--accent)">
+          <h4>自我理解畫像<i>Output 01</i></h4>
+          <p>揉合認知風格、興趣權重與任務意願，生成一段既溫暖又具體的專屬特質分析。</p>
+        </div>
+        <div class="eng-card" style="--c:var(--accent)">
+          <h4>群科配對與理由<i>Output 02</i></h4>
+          <p>從 15 群科中推薦最適配的 3 群，逐條說明推薦理由，並標示需要留意的落差。</p>
+        </div>
+        <div class="eng-card" style="--c:var(--accent)">
+          <h4>聚合效度預警<i>Output 03</i></h4>
+          <p>自動比對三種語言的結果。當「說得出的興趣」與「做得下去的任務」高度不一致時標記提示，
+            供輔導老師提前介入，而不是等到入學後才發現不適應。</p>
+        </div>
+      </div>
+    </div>
+
+    <p class="eng-note">
+      <b>設計立場：</b>本系統是<b>職業試探的教學工具</b>，不是心理衡鑑、醫療診斷、命理占卜或落點分析。
+      它產出的是「值得你去看看的方向」，不是「你只能走的路」。真正的決定，永遠在你自己手上。
+    </p>
+
+    <div class="flow" style="margin-top:30px">
+      <h3 class="flowh">黃金交叉路徑：理解自己 → 認識群科 → 自主選擇</h3>
+      <p class="flowp">AI 是陪伴者，不是命運決定者。整套流程刻意把「決定」留在最後一步，而且交還給學生。</p>
+      <ol class="flowlist">
+        <li><i>Step 01</i><b>問卷填寫</b><span>完成 RIASEC × MBTI 與真實任務偏好測驗，答真實的自己，不是理想的自己。</span></li>
+        <li><i>Step 02</i><b>AI 分析</b><span>整合多維度數據，以餘弦相似度比對群科標準向量，找出個人特質座標。</span></li>
+        <li><i>Step 03</i><b>故事生成</b><span>把數據轉化為結構型、故事型、文化型三種版本的職涯敘事。</span></li>
+        <li><i>Step 04</i><b>群科探索</b><span>依特質推薦前三志願群科，並附上「為什麼適合」的逐條說明。</span></li>
+        <li><i>Step 05</i><b>學生反思</b><span>閱讀故事、自我對話、完成探索任務，形成內在動機而非外部安排。</span></li>
+      </ol>
+    </div>
+
+    <div class="faq" style="margin-top:16px">
+      <div class="fq"><h4><i>角色</i>學生是主角</h4>
+        <p>透過探索找到屬於自己的未來。系統不會替你決定，只會把你的答案整理成你能拿去跟別人討論的語言。</p></div>
+      <div class="fq"><h4><i>角色</i>教師是引導者</h4>
+        <p>協助解讀報告、發動深度對話，並在系統標記不一致訊號時提前介入輔導。</p></div>
+      <div class="fq"><h4><i>角色</i>AI 是翻譯引擎</h4>
+        <p>把數據翻成故事，陪伴而非決策。它負責讓資料有溫度，判斷權始終在人身上。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= WORKBENCH ================= -->
+<section class="sec" id="workbench">
+  <div class="wrap">
+    <div class="sec-hd">
+      <span class="eyebrow">Fig. 03 &nbsp;/&nbsp; 探索工作台</span>
+      <h2>五個步驟，帶走一張可以動手的探索單。</h2>
+      <p>全程約 12–18 分鐘。沒有標準答案，也沒有及格分數——只有「比較像你」與「比較不像你」。</p>
+    </div>
+
+    <div class="wb">
+      <div class="steps" aria-label="探索步驟">
+        <button class="step" type="button" data-step="0" aria-current="true"><i>Step 01</i><b>基本資料</b></button>
+        <button class="step" type="button" data-step="1"><i>Step 02</i><b>MBTI 認知風格</b></button>
+        <button class="step" type="button" data-step="2"><i>Step 03</i><b>RIASEC 興趣</b></button>
+        <button class="step" type="button" data-step="3"><i>Step 04</i><b>真實任務偏好</b></button>
+        <button class="step" type="button" data-step="4"><i>Step 05</i><b>生成敘事</b></button>
+      </div>
+
+      <div class="wb-body">
+        <!-- STEP 0 -->
+        <div class="panel" data-panel="0">
+          <h3 class="wb-h">先讓系統知道怎麼稱呼你</h3>
+          <p class="wb-sub">姓名只用來寫進你的敘事與探索單；出生年月日只用來推算星座與生肖（文化型敘事用）；
+            性別與血型只作為敘事的語氣參考。以上欄位都可以留白或填暱稱，不影響群科配對結果。</p>
+          <div class="fgrid">
+            <div class="fld">
+              <label for="f-name">姓名 / 暱稱</label>
+              <input id="f-name" type="text" maxlength="20" placeholder="例：陳小維" autocomplete="off">
+              <small>會出現在敘事與列印的探索單上。</small>
+            </div>
+            <div class="fld">
+              <label for="f-birth">出生年月日</label>
+              <input id="f-birth" type="date" min="1990-01-01" max="2020-12-31">
+              <small>僅在瀏覽器內推算星座與生肖，不會離開這個頁面。</small>
+            </div>
+            <div class="fld">
+              <label for="f-sex">性別</label>
+              <select id="f-sex">
+                <option value="">不指定</option>
+                <option>女</option><option>男</option>
+                <option>非二元 / 其他</option><option>不願透露</option>
+              </select>
+              <small>不影響任何配對權重。</small>
+            </div>
+            <div class="fld">
+              <label for="f-blood">血型</label>
+              <select id="f-blood">
+                <option value="">不確定</option>
+                <option>A</option><option>B</option><option>O</option><option>AB</option>
+              </select>
+              <small>僅用於文化型敘事的比喻語彙。</small>
+            </div>
+            <div class="fld">
+              <label for="f-stage">目前階段</label>
+              <select id="f-stage">
+                <option>國中七年級</option><option>國中八年級</option>
+                <option selected>國中九年級</option>
+                <option>技高一年級</option><option>技高二年級</option>
+                <option>技高三年級</option><option>其他 / 家長 / 教師</option>
+              </select>
+              <small>影響探索任務的建議做法。</small>
+            </div>
+          </div>
+          <div class="switchrow">
+            <button type="button" class="switch" id="culture-sw" aria-pressed="true" aria-label="文化趣味模式開關"></button>
+            <div class="switchtx">
+              <b>文化趣味模式<em>CULTURE FUN MODE · 預設開啟</em></b>
+              <p>開啟後，系統會依出生年月日與血型生成「C 版文化型敘事」，並提供一組
+                <b>家長焦慮轉譯對照表</b>——把命理語彙翻譯成教育策略語言。
+                此模式<b>不涉及占卜預測，也不參與群科配對計算</b>，純粹作為提升參與度的文化入口。
+                各校可依校風關閉；關閉後，C 版敘事與相關欄位會一併隱藏。</p>
+            </div>
+          </div>
+          <div id="cultural-peek" class="privacy" hidden></div>
+          <p class="privacy">
+            <b>個資最小化設計：</b>這個頁面沒有登入、沒有資料庫，也沒有任何會傳出你作答內容的連線
+            （頁面只在載入時向字型服務取得字型檔，不含任何個人資料）。
+            你輸入的一切只存在於目前這個瀏覽器分頁的記憶體中，<b>關閉或重新整理即完全消失</b>，
+            系統也不會寫入 Cookie 或本機儲存空間。要留存結果，請使用下方的「列印探索單」或「複製摘要」。
+          </p>
+        </div>
+
+        <!-- STEP 1 -->
+        <div class="panel" data-panel="1" hidden>
+          <h3 class="wb-h">MBTI 認知風格 · 32 題</h3>
+          <p class="wb-sub">請依照「真實的你」而不是「你希望成為的你」作答。沒有好壞之分，兩端都只是不同的運作方式。
+            四個向度各 8 題，題目已交錯排列。</p>
+          <div class="scale-key"><span>1 · 非常不同意</span><span>3 · 普通</span><span>5 · 非常同意</span></div>
+          <div class="qlist" id="mbti-q"></div>
+          <p class="hint" id="mbti-hint"></p>
+        </div>
+
+        <!-- STEP 2 -->
+        <div class="panel" data-panel="2" hidden>
+          <h3 class="wb-h">RIASEC 職業興趣 · 36 題</h3>
+          <p class="wb-sub">這一段問的是「你有多喜歡」，不是「你做得多好」。六個興趣類型各 6 題，
+            結果會換算成 0–100 的權重與你的興趣前三碼。每一種類型，都是一段獨特的職涯故事：</p>
+          <ul class="flowlist" id="ria-legend" style="margin-bottom:20px"></ul>
+          <div class="scale-key"><span>1 · 完全不感興趣</span><span>3 · 普通</span><span>5 · 非常感興趣</span></div>
+          <div class="qlist" id="riasec-q"></div>
+          <p class="hint" id="riasec-hint"></p>
+        </div>
+
+        <!-- STEP 3 -->
+        <div class="panel" data-panel="3" hidden>
+          <h3 class="wb-h">真實任務偏好 · 12 題</h3>
+          <p class="wb-sub">上一段問的是「喜歡」，這一段問的是「願意」。想像這是下週三下午的實習課，
+            你必須真的動手做完它——你有多願意？這一段的答案會拿來和你的興趣比對，找出兩者之間的落差。</p>
+          <div class="scale-key"><span>1 · 完全不想做</span><span>3 · 還好</span><span>5 · 非常願意</span></div>
+          <div class="qlist" id="task-q"></div>
+          <p class="hint" id="task-hint"></p>
+        </div>
+
+        <!-- STEP 4 -->
+        <div class="panel" data-panel="4" hidden>
+          <h3 class="wb-h">確認後生成你的職涯敘事</h3>
+          <p class="wb-sub">系統將把三份資料合併運算，產生結構型、故事型、文化型三種版本的敘事，
+            以及 15 群科中的前三名配對與推薦理由。</p>
+          <div id="ready" class="gaps"></div>
+          <div style="margin-top:24px" class="actions">
+            <button class="btn btn-pri" id="gen" type="button">生成我的職涯敘事 →</button>
+            <button class="btn btn-sm" id="fill-demo" type="button">載入示範作答（教學展示用）</button>
+          </div>
+          <p class="hint">未作答的題目會以「普通（3 分）」計入，但作答越完整，敘事與配對就越貼近你。</p>
+        </div>
+      </div>
+
+      <div class="wb-foot">
+        <div class="prog">
+          <div class="prog-bar"><i id="prog-i"></i></div>
+          <div class="prog-tx" id="prog-t">STEP 01 / 05 · 基本資料</div>
+        </div>
+        <span class="sp"></span>
+        <button class="btn btn-sm" id="prev" type="button" disabled>← 上一步</button>
+        <button class="btn btn-sm btn-pri" id="next" type="button">下一步 →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= RESULT ================= -->
+<section class="sec" id="result" hidden>
+  <div class="wrap">
+    <div class="printhd">
+      <h1>AI 職涯敘事生成系統 · 個人探索單</h1>
+      <p id="print-meta">生成可能，而非定義未來</p>
+      <p>新北市立鶯歌工商　顏龍源、盧淑惠　|　本單為職業試探教學工具產出，非心理衡鑑或落點分析</p>
+    </div>
+
+    <div class="sec-hd noprint">
+      <span class="eyebrow">Fig. 04 &nbsp;/&nbsp; 生成結果</span>
+      <h2>這是你的圖，不是你的判決。</h2>
+      <p>以下所有內容都由你剛才的作答即時運算產生，沒有經過任何伺服器。往下讀完，再決定要去看看哪一條路線。</p>
+    </div>
+
+    <div class="sheet">
+      <div class="tblock noprint"><b>DWG-01</b><span>自我理解畫像 / Self-Understanding Portrait</span><span class="sp" id="stamp"></span></div>
+
+      <div class="rs-top">
+        <div class="rs-id">
+          <div class="rs-name" id="r-name">探索者</div>
+          <div class="rs-meta" id="r-meta"></div>
+          <div class="mbti-block" id="r-mbti"></div>
+          <div class="mbti-title" id="r-mbtitle"></div>
+          <p class="mbti-desc" id="r-mbdesc"></p>
+        </div>
+        <div class="rs-plot">
+          <div class="rs-h"><i>RIASEC</i>興趣權重與任務意願</div>
+          <div class="riasec-bars" id="r-bars"></div>
+          <p class="hint" style="margin-top:14px">
+            <span style="display:inline-block;width:11px;height:9px;background:var(--green);border:1px solid var(--rule);vertical-align:middle"></span> 興趣權重（你有多喜歡）
+            <span style="display:inline-block;width:11px;height:9px;background:var(--accent);border:1px solid var(--rule);vertical-align:middle"></span> 任務意願（你有多願意做）
+          </p>
+        </div>
+      </div>
+
+      <div class="rs-sec">
+        <div class="rs-h"><i>Note A</i>你現在站在生涯的哪一段</div>
+        <p class="rs-lead" id="r-superlead">依 Super 生涯發展理論（Life-span Theory）定位你目前所處的階段。
+          這是本系統用來取代命理「流年」的科學版本——生涯是一段持續發展的旅程，不是一次定終身的選擇。</p>
+        <div class="stages" id="r-stages"></div>
+        <p class="hint" id="r-supernote"></p>
+      </div>
+
+      <div class="rs-sec">
+        <div class="rs-h"><i>Note B</i>聚合效度檢核：興趣與實作偏好的差異</div>
+        <p class="rs-lead">「喜歡看」和「願意做」不一定是同一件事。技術型高中的課程有大量實習與操作時數，
+          這一段把兩份資料交叉比對，避免入學後才發現「原來我喜歡的是成果，不是過程」。
+          當差距過大時，系統會標記為需要提前關注，供輔導老師參考。</p>
+        <div id="r-alert"></div>
+        <div class="gaps" id="r-gaps"></div>
+      </div>
+
+      <div class="rs-sec">
+        <div class="rs-h"><i>Note C</i>三個版本的自我敘事</div>
+        <p class="rs-lead">同一組資料，可以說成三種故事。哪一個版本讓你比較認得出自己，那就是現在最適合你使用的語言。</p>
+        <div class="tabs" role="tablist" aria-label="敘事版本">
+          <button class="tab" type="button" role="tab" data-tab="s" aria-selected="true"><i>Version A</i><b>結構型敘事</b></button>
+          <button class="tab" type="button" role="tab" data-tab="n" aria-selected="false"><i>Version B</i><b>故事型敘事</b></button>
+          <button class="tab" type="button" role="tab" id="tab-c" data-tab="c" aria-selected="false"><i>Version C</i><b>文化型敘事</b></button>
+        </div>
+        <div role="tabpanel" class="tabpanel narr" data-tp="s" data-print-title="Version A · 結構型敘事" id="narr-s"></div>
+        <div role="tabpanel" class="tabpanel narr" data-tp="n" data-print-title="Version B · 故事型敘事" id="narr-n" hidden></div>
+        <div role="tabpanel" class="tabpanel narr" data-tp="c" data-print-title="Version C · 文化型敘事" id="narr-c" hidden></div>
+      </div>
+
+      <div class="rs-sec">
+        <div class="rs-h"><i>Note D</i>15 群科前三名配對與理由</div>
+        <p class="rs-lead">以餘弦相似度比對你的特質向量與 15 群科的標準向量。權重：RIASEC 興趣 50%、真實任務意願 30%、
+          MBTI 認知風格 20%，四碼命中該群建議型再加 6 分。
+          適配指數是「相似程度」，不是「錄取機率」，也不代表其他群科不適合你。</p>
+        <div class="matches" id="r-match"></div>
+        <p class="hint">各校群科歸類、科別名稱與招生方式可能不同，實際請以各校招生簡章與技術型高中課程綱要為準。</p>
+      </div>
+
+      <div class="rs-sec">
+        <div class="rs-h"><i>Note E</i>群科探索任務清單</div>
+        <p class="rs-lead">敘事只是起點，真正的答案在現場。勾選你已經完成的任務，把這張清單當成接下來三個月的行動備忘錄。</p>
+        <div class="tprog noprint">
+          <span id="task-count">已完成 0 / 0</span>
+          <span class="bar"><i id="task-bar"></i></span>
+        </div>
+        <div class="tasks" id="r-tasks" style="margin-top:16px"></div>
+        <div class="signrow">
+          <div>學生簽名：</div><div>家長簽名：</div><div>輔導老師簽章：</div>
+        </div>
+      </div>
+
+      <div class="rs-sec noprint">
+        <div class="rs-h"><i>Note F</i>專屬社群分享預覽卡</div>
+        <p class="rs-lead">為你生成的分享卡。長按（手機）或截圖即可分享；右側是可直接貼到限時動態或班群的文字版。</p>
+        <div class="share-wrap">
+          <div class="scard" id="scard">
+            <div class="sc-top"><span>Career Narrative Atlas</span><b id="sc-date"></b></div>
+            <div class="sc-name" id="sc-name"></div>
+            <div class="sc-code"><b id="sc-mbti">----</b><em id="sc-riasec">---</em></div>
+            <div class="sc-grp" id="sc-grp"></div>
+            <div class="sc-tl" id="sc-tl">生成可能，而非定義未來</div>
+            <div class="sc-ft">MBTI × RIASEC × 真實任務偏好 · 六大類十五群科探索</div>
+          </div>
+          <div class="share-side">
+            <textarea class="share-tx" id="share-tx" readonly aria-label="分享文字"></textarea>
+            <button class="btn btn-sm" id="copy-share" type="button">複製分享文字</button>
+            <p class="hint" style="margin:0">分享卡不含出生年月日、性別與血型；姓名可在上一步改成暱稱。</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="rs-sec noprint">
+        <div class="rs-h"><i>Note G</i>帶走你的結果</div>
+        <p class="rs-lead">這個頁面不會替你保存任何東西。離開之前，請先複製或列印。</p>
+        <div class="actions">
+          <button class="btn btn-pri" id="do-print" type="button">列印探索單（含簽章欄）</button>
+          <button class="btn" id="do-copy" type="button">複製完整摘要</button>
+          <button class="btn" id="do-reset" type="button">清除資料並重新測驗</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= GROUPS ================= -->
+<section class="sec" id="groups">
+  <div class="wrap">
+    <div class="sec-hd">
+      <span class="eyebrow">Fig. 05 &nbsp;/&nbsp; 技術型高中群科地圖</span>
+      <h2>六大類、十五群、九十四個專業類科的全景。</h2>
+      <p>每一張圖卡標示該群科的霍蘭德興趣傾向（深色＝主要碼、淺色＝次要碼）、建議 MBTI 型、代表科別與代表職業，
+        並附一段來自教學現場的真實案例。先看完整張地圖，再回頭看系統推薦的三群，你會更清楚它為什麼那樣推薦。</p>
+    </div>
+    <div class="filters" id="gfilters"></div>
+    <div class="gmap" id="gmap"></div>
+    <p class="hint" style="margin-top:18px">
+      群科分類採本計畫所使用之 15 群架構（家事類含幼保群、海事水產類合併為一群）。
+      教育部課綱在部分名稱與歸類上略有差異（例如海事群與水產群分列、幼兒保育科隸屬家政群），
+      各校招生名稱與科別組合亦不盡相同，實際請以各校招生簡章與技術型高中課程綱要為準。</p>
+  </div>
+</section>
+
+<!-- ================= IMPACT ================= -->
+<section class="sec" id="impact">
+  <div class="wrap">
+    <div class="sec-hd">
+      <span class="eyebrow">Fig. 06 &nbsp;/&nbsp; 導入成效</span>
+      <h2>學生的改變，不在分數上，在他們開始問問題。</h2>
+      <p>以下為本計畫於教學現場導入前後所回報的成效數據與觀察。這些是計畫團隊的實施回報，
+        非對照組實驗結果，僅供了解導入方向與量級參考。</p>
+    </div>
+    <div class="impact">
+      <div class="imp">
+        <h5>多元可能認知</h5>
+        <div class="barpair">
+          <div class="bp"><em>導入前</em><span class="tr"><i style="width:34%"></i></span><strong>34%</strong></div>
+          <div class="bp after"><em>導入後</em><span class="tr"><i style="width:81%"></i></span><strong>81%</strong></div>
+        </div>
+        <p class="note">認同「未來職涯有多種可能」的學生比例。</p>
+      </div>
+      <div class="imp">
+        <h5>技職體系理解</h5>
+        <div class="barpair">
+          <div class="bp"><em>導入前</em><span class="tr"><i style="width:28%"></i></span><strong>28%</strong></div>
+          <div class="bp after"><em>導入後</em><span class="tr"><i style="width:76%"></i></span><strong>76%</strong></div>
+        </div>
+        <p class="note">能說出技高六大類十五群科基本架構的學生比例。</p>
+      </div>
+      <div class="imp">
+        <h5>質化觀察</h5>
+        <div class="barpair" style="gap:11px">
+          <div style="font-size:13px;line-height:1.75;color:var(--ink-soft)"><b style="color:var(--ink)">從被動到主動：</b>學生不再等老師給答案，開始主動問「我適合什麼群科」。</div>
+          <div style="font-size:13px;line-height:1.75;color:var(--ink-soft)"><b style="color:var(--ink)">轉科率下降：</b>入學前已充分了解群科特色，入學後轉科意願降低。</div>
+          <div style="font-size:13px;line-height:1.75;color:var(--ink-soft)"><b style="color:var(--ink)">被理解而非被分類：</b>學生對自身學習路徑更有信心。</div>
+        </div>
+      </div>
+      <div class="imp">
+        <h5>親師溝通轉化</h5>
+        <div class="barpair" style="gap:11px">
+          <div style="font-size:13px;line-height:1.75;color:var(--ink-soft)">
+            家長原因「命帶魁罡，不適合從文」而焦慮。開啟文化趣味模式後，系統將其重新詮釋為
+            <b style="color:var(--violet)">強勢執行力與領導氣場</b>，並建議「適合具挑戰性的高強度實作任務」。</div>
+          <div style="font-size:13px;line-height:1.75;color:var(--ink-soft)">
+            <b style="color:var(--ink)">結果：</b>家長從焦慮的命理信徒，轉為支持孩子探索機械群的教育夥伴。</div>
+        </div>
+        <p class="note">這正是文化趣味模式存在的理由——它服務的是對話，不是預測。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= INSTRUMENT / FAQ ================= -->
+<section class="sec" id="instrument">
+  <div class="wrap">
+    <div class="sec-hd">
+      <span class="eyebrow">Fig. 07 &nbsp;/&nbsp; 量表與演算法說明</span>
+      <h2>怎麼算出來的，全部攤開給你看。</h2>
+    </div>
+    <div class="faq">
+      <div class="fq"><h4><i>01</i>MBTI 怎麼計分？</h4>
+        <p>四個向度各 8 題，採 1–5 分李克特量尺，正反向題交錯。每個向度加總後換算成 −100 到 +100 的座標，
+          取正負決定字母，取絕對值決定「傾向強度」。落在 ±15 以內會標示為「接近中間」，代表兩端你都用得順。</p></div>
+      <div class="fq"><h4><i>02</i>RIASEC 權重怎麼來？</h4>
+        <p>六個類型各 6 題，全部正向計分。每型加總後除以滿分換算為 0–100 的權重，取前三高組成你的興趣三碼（如 RIC）。
+          權重相近時代表你的興趣分布較平均，探索範圍可以放寬一些。</p></div>
+      <div class="fq"><h4><i>03</i>「真實任務偏好」是什麼？</h4>
+        <p>12 題描述具體的實習場景，每個 RIASEC 類型各 2 題，問的是「願不願意親手做」。
+          它和興趣分數相減，就是你的興趣—實作落差。落差超過 20 分會在結果中特別提醒。</p></div>
+      <div class="fq"><h4><i>04</i>群科配對的公式是什麼？</h4>
+        <p>每個群科都有一組標定的 RIASEC 標準向量與 MBTI 親和度。系統擷取你的六向度分數建立個人特質向量，
+          與 15 群的標準向量做<b>餘弦相似度</b>比對（先做中心化以拉開鑑別度）。
+          總分 ＝ 興趣相似度 × 50% ＋ 任務意願相似度 × 30% ＋ 認知風格契合度 × 20%；
+          若你的四碼命中該群科的建議 MBTI 型，再加 6 分權重。取前三名並回推推薦理由。</p></div>
+      <div class="fq"><h4><i>05</i>星座、生肖、血型為什麼會出現？</h4>
+        <p>它們屬於可開關的<b>文化趣味模式</b>，只出現在 C 版敘事，用途是提供學生與家長熟悉的語彙作為參與入口，
+          並附一張「家長焦慮轉譯對照表」，把命理語言換成教育策略語言。
+          這些項目<b>完全不參與</b>群科配對計算，也不構成任何科學推論；各校可於步驟一關閉。</p></div>
+      <div class="fq"><h4><i>06</i>結果可以當作選填志願的依據嗎？</h4>
+        <p>不建議單獨使用。這是職業試探的起點，正確用法是拿著它去做三件事：看該群科的實習課表、
+          找一位在讀的學長姐聊天、參加一次職業試探體驗營。做完再回來看，答案通常會自己浮現。</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="faq">
+  <div class="wrap">
+    <div class="sec-hd">
+      <span class="eyebrow">Fig. 08 &nbsp;/&nbsp; 使用限制與資料聲明</span>
+      <h2>先說清楚它不是什麼。</h2>
+    </div>
+    <div class="faq">
+      <div class="fq"><h4><i>限制</i>它不是心理衡鑑</h4>
+        <p>本系統採用的是教學用簡式量表，未經標準化常模驗證，不能取代專業心理測驗、輔導諮商或醫療診斷。
+          若你正為情緒或生涯困擾所苦，請與學校輔導老師聯繫。</p></div>
+      <div class="fq"><h4><i>限制</i>它不是落點分析</h4>
+        <p>適配度只反映「你的特質與該群科典型樣貌的相似程度」，與該校錄取分數、招生名額、就業率完全無關。</p></div>
+      <div class="fq"><h4><i>限制</i>它不是命運預言</h4>
+        <p>MBTI 四碼會隨年齡、環境與經驗變動，興趣更是如此。今天的結果只描述「現在的你」，
+          三年後重測很可能不一樣——那不是測錯了，那是你長大了。</p></div>
+      <div class="fq"><h4><i>資料</i>零上傳、零儲存</h4>
+        <p>整套運算都在你的瀏覽器內完成。沒有帳號、沒有後端 API、沒有分析追蹤，也不寫入 Cookie 或 localStorage；唯一的外部請求是網頁字型檔，不含任何個人資料。
+          關閉分頁的那一刻，所有輸入即不可回復地消失。</p></div>
+      <div class="fq"><h4><i>教學</i>給老師的使用建議</h4>
+        <p>建議搭配一節課的時間：前 20 分鐘作答、10 分鐘閱讀三版本敘事、15 分鐘小組互相說明自己的三群配對，
+          最後列印探索單作為輔導紀錄。重點放在「說明理由」而非「比較結果」。</p></div>
+      <div class="fq"><h4><i>教學</i>給家長的一句話</h4>
+        <p>孩子拿這張圖回家時，最有幫助的問句不是「你確定嗎」，而是「這三群裡，你最想先去看哪一個？」</p></div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot noprint">
+  <div class="wrap">
+    <div class="foot-in">
+      <div>
+        <h5>關於本計畫</h5>
+        <p><b>生成可能，而非定義未來：AI 職涯敘事生成與技高群科探索計畫</b><br>
+          新北市立鶯歌工商　顏龍源、盧淑惠<br>
+          第二屆「技職力 100」職業試探與技職引導組<br>
+          2026 台灣 AI 教育年會教學應用投稿</p>
+      </div>
+      <div>
+        <h5>核心主張</h5>
+        <p>生成可能，而非定義未來。<br>AI 是翻譯引擎，不是命運決定者。<br>探索 → 理解 → 體驗 → 反思 → 決策。<br>教育的任務不是分類學生，而是陪伴學生生成未來。</p>
+      </div>
+      <div>
+        <h5>理論與資料來源</h5>
+        <p>Holland 職業興趣理論（RIASEC）· MBTI 四向度架構 · Super 生涯發展理論<br>
+          全國技術型高中專業群科統整資料（6 大類 · 15 群 · 92+2 專業類科）</p>
+      </div>
+      <div>
+        <h5>資料處理</h5>
+        <p>無登入 · 無後端 · 無 Cookie · 無追蹤。<br>所有計算於瀏覽器記憶體內完成，離開頁面即銷毀。</p>
+      </div>
+    </div>
+    <div class="foot-bar">
+      <span>CAREER NARRATIVE DRAFTING ROOM</span>
+      <span>教學試探工具 · 非心理衡鑑 · 非落點分析</span>
+      <span class="sp"></span>
+      <span id="foot-ver"></span>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* =========================================================
+   AI 職涯敘事生成系統 · 全部運算於瀏覽器記憶體內完成
+   無後端 / 無 Cookie / 無 localStorage / 作答內容不外傳（僅字型檔為外部資源）
+   ========================================================= */
+(function(){
+'use strict';
+
+/* ---------- MBTI 32 題（正向 r=+1 指向 I/N/F/P） ---------- */
+var MBTI_Q = [
+ {t:'熱鬧的場合待久了，我會想找個安靜的角落充電。', d:'EI', r:1},
+ {t:'我常常在想「如果換一種做法，結果會怎樣」。', d:'SN', r:1},
+ {t:'做決定時，我會先考慮這樣做別人會不會受傷。', d:'TF', r:1},
+ {t:'計畫被臨時改變時，我反而覺得有趣。', d:'JP', r:1},
+ {t:'認識新朋友時，我通常等別人先開口。', d:'EI', r:1},
+ {t:'我比較相信親眼看到、親手摸到的事實。', d:'SN', r:-1},
+ {t:'就算結論讓人不舒服，我還是會說出我認為正確的分析。', d:'TF', r:-1},
+ {t:'我會提早把該做的事做完，不喜歡拖到最後一刻。', d:'JP', r:-1},
+ {t:'一整天都在跟人互動，我反而覺得精神變好。', d:'EI', r:-1},
+ {t:'看說明的時候，我會先抓整體概念，細節之後再補。', d:'SN', r:1},
+ {t:'朋友難過時，我的第一個反應是陪他，而不是幫他分析。', d:'TF', r:1},
+ {t:'我的書包或桌面常處於「我知道東西在哪」的混亂狀態。', d:'JP', r:1},
+ {t:'我習慣先在心裡想清楚，才把話說出口。', d:'EI', r:1},
+ {t:'我做事喜歡照著已經被驗證過的步驟走。', d:'SN', r:-1},
+ {t:'我覺得一致的規則，比個別的體諒更重要。', d:'TF', r:-1},
+ {t:'出門玩之前，我習慣先把行程排好。', d:'JP', r:-1},
+ {t:'分組討論時，我常常是主動把氣氛帶起來的人。', d:'EI', r:-1},
+ {t:'我腦中常出現還沒有人做過的點子。', d:'SN', r:1},
+ {t:'我很容易感受到現場氣氛的變化。', d:'TF', r:1},
+ {t:'我喜歡保留彈性，晚一點再決定要做什麼。', d:'JP', r:1},
+ {t:'比起大團體，我更喜歡一兩個好朋友的深聊。', d:'EI', r:1},
+ {t:'別人描述事情時，我希望他講得具體、最好有數字。', d:'SN', r:-1},
+ {t:'我習慣用「合不合邏輯」來判斷一件事。', d:'TF', r:-1},
+ {t:'待辦事項打勾的那一刻，讓我很有成就感。', d:'JP', r:-1},
+ {t:'放假時，我偏好安排有很多人參與的行程。', d:'EI', r:-1},
+ {t:'我對「未來可能變成什麼樣」比「現在是什麼樣」更感興趣。', d:'SN', r:1},
+ {t:'被稱讚「很體貼」比被稱讚「很聰明」更讓我開心。', d:'TF', r:1},
+ {t:'我常同時開始很多件事，最後再一起收尾。', d:'JP', r:1},
+ {t:'我需要獨處的時間，才整理得好自己的心情。', d:'EI', r:1},
+ {t:'我記東西時，細節和實際發生的過程記得特別清楚。', d:'SN', r:-1},
+ {t:'討論時，我會直接指出對方推論裡的漏洞。', d:'TF', r:-1},
+ {t:'我需要清楚的截止日期和規則，才做得安心。', d:'JP', r:-1}
+];
+
+/* ---------- RIASEC 36 題（全部正向） ---------- */
+var RIASEC_Q = [
+ {t:'我喜歡動手把東西拆開，看看裡面到底怎麼運作。', k:'R'},
+ {t:'我喜歡追問「為什麼會變成這樣」。', k:'I'},
+ {t:'我喜歡用圖像、文字、音樂或影像表達想法。', k:'A'},
+ {t:'我喜歡教別人、幫別人把不懂的事弄懂。', k:'S'},
+ {t:'我喜歡帶頭做決定，把一件事推動起來。', k:'E'},
+ {t:'我喜歡把雜亂的資料整理得整齊清楚。', k:'C'},
+ {t:'我對機械、工具或機具的操作感到有趣。', k:'R'},
+ {t:'我對科學實驗或資料分析感到有趣。', k:'I'},
+ {t:'我對美感、配色與造型特別敏感。', k:'A'},
+ {t:'我對照顧、陪伴或協助他人的工作有興趣。', k:'S'},
+ {t:'我對行銷、業務或創業這類事情感到有趣。', k:'E'},
+ {t:'我對帳務、紀錄或流程管理感到有趣。', k:'C'},
+ {t:'比起讀理論，我更想直接到現場做做看。', k:'R'},
+ {t:'遇到難題時，我享受慢慢把它拆解清楚的過程。', k:'I'},
+ {t:'我享受從零開始創作出一個作品。', k:'A'},
+ {t:'別人願意跟我說心事，我覺得那很有意義。', k:'S'},
+ {t:'我不排斥上台說服別人接受我的想法。', k:'E'},
+ {t:'照著明確的規範做事，會讓我覺得安心。', k:'C'},
+ {t:'我喜歡修理壞掉的東西，讓它重新能用。', k:'R'},
+ {t:'我喜歡閱讀原理、規格書或研究性的內容。', k:'I'},
+ {t:'我不喜歡每件事都只有一種標準答案。', k:'A'},
+ {t:'我喜歡在團隊裡，讓大家合作得更順一點。', k:'S'},
+ {t:'我喜歡設定目標，然後想辦法達成它。', k:'E'},
+ {t:'我很在意細節有沒有出錯。', k:'C'},
+ {t:'我對戶外、需要體力與技術的工作有興趣。', k:'R'},
+ {t:'比起照做，「找出更好的方法」更讓我有動力。', k:'I'},
+ {t:'我對設計、表演或創作類的活動有興趣。', k:'A'},
+ {t:'我對教育、醫護、社福這類助人領域感到有趣。', k:'S'},
+ {t:'我對「怎麼把東西賣出去」感到好奇。', k:'E'},
+ {t:'我喜歡用表格、清單來安排事情。', k:'C'},
+ {t:'我喜歡看得到成品、摸得到成果的工作。', k:'R'},
+ {t:'我喜歡用數據或證據來支持自己的看法。', k:'I'},
+ {t:'我常常想把身邊的東西弄得更好看一點。', k:'A'},
+ {t:'看到別人因為我而變好，我會很有成就感。', k:'S'},
+ {t:'為了更好的結果，我願意承擔一些風險。', k:'E'},
+ {t:'我對需要細心與準確的工作有興趣。', k:'C'}
+];
+
+/* ---------- 真實任務偏好 12 題 ---------- */
+var TASK_Q = [
+ {t:'實習課要你拆解一台故障的引擎，找出問題並裝回去。', k:'R'},
+ {t:'你必須反覆量測同一組數據，直到找出誤差的原因。', k:'I'},
+ {t:'你要從一張白紙開始，設計出一個作品的完整樣貌。', k:'A'},
+ {t:'你要一對一教會一位完全不會的同學，直到他做得出來。', k:'S'},
+ {t:'你要站上台介紹自己的成果，並說服評審採用它。', k:'E'},
+ {t:'你要把一疊雜亂的單據，逐筆核對並登錄成正確表單。', k:'C'},
+ {t:'你要穿工作服進工場，按圖操作機具兩節課。', k:'R'},
+ {t:'你要讀完一份規格書，算出正確的參數再開始做。', k:'I'},
+ {t:'你要重複練習同一段表演或作品，直到自己滿意為止。', k:'A'},
+ {t:'你要照顧一位情緒不穩的對象，陪他到情況穩定。', k:'S'},
+ {t:'你要主動打電話接洽外部單位，把一場活動談成。', k:'E'},
+ {t:'你要依照標準流程完成紀錄與核章，一個步驟都不能跳。', k:'C'}
+];
+
+var RIA_NAME = {R:'實作型', I:'研究型', A:'藝術型', S:'社會型', E:'企業型', C:'事務型'};
+var RIA_FULL = {
+ R:'Realistic 實作型', I:'Investigative 研究型', A:'Artistic 藝術型',
+ S:'Social 社會型', E:'Enterprising 企業型', C:'Conventional 事務型'
+};
+var RIA_TASK = {
+ R:'動手操作與機具', I:'分析、量測與求證', A:'創作與造型',
+ S:'教學、照顧與陪伴', E:'說服、接洽與推動', C:'核對、紀錄與流程'
+};
+var RIA_KEYS = ['R','I','A','S','E','C'];
+var RIA_ALIAS = {R:'工匠魂', I:'科學家', A:'夢想家', S:'守護者', E:'開拓者', C:'管理大師'};
+var RIA_ALIAS_TX = {
+ R:'動手打造世界，喜歡機械與實作，用雙手實現夢想的技術職人。',
+ I:'探索未知真理，熱愛分析與研究，以好奇心解開世界的謎題。',
+ A:'揮灑創意能量，擅長藝術與設計，將靈感化為感動人心的作品。',
+ S:'溫暖陪伴他人，熱衷教育與服務，用愛心成為別人最堅強的後盾。',
+ E:'勇於領導挑戰，擅長溝通與說服，帶領團隊開創嶄新的可能。',
+ C:'精準掌握細節，熱愛數據與規劃，用系統思維打造完美秩序。'
+};
+
+/* ---------- Super 生涯發展理論五階段 ---------- */
+var SUPER = [
+ {k:'成長期', age:'0–14 歲', tx:'自我概念萌芽，透過遊戲、模仿與好奇心認識這個世界。這個階段的任務不是決定，而是累積印象。'},
+ {k:'探索期', age:'15–24 歲', tx:'嘗試、試探、建立方向感。技高的實習課、打工、社團，全都是這個階段合法且必要的「試錯」。'},
+ {k:'建立期', age:'25–44 歲', tx:'穩定發展，深耕專業領域，把試探期選定的方向做深。'},
+ {k:'維持期', age:'45–64 歲', tx:'鞏固既有成就，同時面對技術更新，傳承與創新並行。'},
+ {k:'衰退期', age:'65 歲以上', tx:'退休轉型，重新安排生活重心，活出生命的另一種意義。'}
+];
+
+/* ---------- 命理語彙 → 教育策略 轉譯對照（文化趣味模式） ---------- */
+var TRANSLATE = [
+ {a:'命帶魁罡，個性太硬、不受教', b:'具備高強度執行力與領導氣場',
+  c:'安排具挑戰性的高強度實作任務與小組長角色，讓能量有出口。壓抑只會讓對抗升高。'},
+ {a:'傷官太重，愛頂嘴、不服管教', b:'對美感與規則的缺陷高度敏銳、創意不受框架限制',
+  c:'給予創作與提案的舞台（設計群、藝術群），把「挑毛病」轉化為「找到更好的做法」。'},
+ {a:'七殺過旺，衝動、坐不住', b:'行動力強、抗壓性高、在變動中反而穩定',
+  c:'適合動力機械、海事水產這類需要臨場判斷的現場工作，靜態抄寫式作業反而消耗他。'},
+ {a:'貪狼星，愛玩、心思不定', b:'興趣廣、學習遷移快、社交能量高',
+  c:'不要急著收斂選項，先讓他多做幾次職業試探；廣度是他的資產，不是缺點。'},
+ {a:'武曲星，太固執、不知變通', b:'重承諾、耐得住重複、對品質有堅持',
+  c:'機械、土木、化工這類重視標準與精度的群科，正需要這種「不肯將就」。'},
+ {a:'文昌星，適合讀書，不該讀技職', b:'文字與邏輯表達能力佳',
+  c:'技職同樣需要能寫報告、做提案、跑國貿與外語的人——商管群與外語群就是為此而設。'}
+];
+
+/* ---------- MBTI 16 型 ---------- */
+var MBTI_T = {
+ ISTJ:['穩定的執行者','你相信被驗證過的方法，說到就會做到。交給你的事會準時、按規格完成，這在需要精度與紀律的技術現場是稀有的優勢。'],
+ ISFJ:['細心的守護者','你記得別人忽略的細節，也記得別人需要什麼。你的可靠不是喊出來的，是一次次補位累積出來的。'],
+ INFJ:['沉靜的洞察者','你習慣在表面之下找意義，對人與情境有近乎直覺的判讀。你需要的是一個能讓你長期投入、而不只是完成任務的方向。'],
+ INTJ:['長線的設計者','你不滿足於「能動就好」，你想知道整個系統該怎麼被重新設計。你適合先看見終點，再倒推路徑。'],
+ ISTP:['拆解與修復者','你用手思考。與其聽人解釋，你更想把東西打開來看。故障排除的那種安靜專注，是你的主場。'],
+ ISFP:['安靜的創作者','你對質感、色彩與氛圍有天生的敏感度，也不喜歡被框住。你的作品通常比你的話語更會說話。'],
+ INFP:['理想的敘事者','你在意一件事「值不值得」勝過「划不划算」。當工作連得上你的價值，你的續航力會遠超乎別人預期。'],
+ INTP:['追根究柢的解題者','你享受把一個問題拆到最底層。規則對你來說是待驗證的假設，不是必然的前提。'],
+ ESTP:['現場的行動者','你在真實情境裡學得最快，也最能應變。與其開三次會，你寧可先做一次試試看。'],
+ ESFP:['熱度的點燃者','你讓現場活起來。你的學習來自參與與互動，靜態的紙上作業對你來說最消耗能量。'],
+ ENFP:['可能性的探路者','你同時看得到很多條路，也擅長把人串在一起。你需要的不是被限制選項，而是被協助收斂。'],
+ ENTP:['點子的實驗者','你天生會問「為什麼一定要這樣做」。你適合在允許試錯的環境裡，快速驗證想法。'],
+ ESTJ:['秩序的組織者','你能把混亂的狀況整理成可執行的分工與時程。你重視效率，也願意為結果扛責任。'],
+ ESFJ:['團隊的照顧者','你天然地在意團體的氣氛與每個人的狀態。服務與協作型的現場，你會做得比誰都自然。'],
+ ENFJ:['帶人向前的引導者','你有把一群人的潛力叫出來的能力。你適合站在人與人之間，讓事情因為關係而推進。'],
+ ENTJ:['目標的推進者','你看到終點就會開始鋪路。你不怕做決定，也不怕承擔決定之後的重量。']
+};
+var AXIS_TX = {
+ E:['外向 E','你的能量從互動與現場而來，說出口的過程本身就在幫你思考。'],
+ I:['內向 I','你的能量從獨處與內在整理而來，先想清楚再開口是你的節奏。'],
+ S:['實感 S','你信任具體、可驗證、摸得到的資訊，細節與步驟對你特別清楚。'],
+ N:['直覺 N','你先抓整體與可能性，對「還沒發生的事」比「已經發生的事」更有感。'],
+ T:['思考 T','你用邏輯與一致性判斷，願意說出不討喜但正確的結論。'],
+ F:['情感 F','你把人的感受納入判斷，對現場氣氛的變化特別敏銳。'],
+ J:['判斷 J','你偏好計畫、期限與收斂，事情有定案你才安心。'],
+ P:['感知 P','你偏好彈性、開放與臨場調整，太早定案會讓你不舒服。']
+};
+/* ---------- 技術型高中 6 大類 / 15 群 / 94 專業類科（92 一般 + 2 特殊） ---------- */
+var GROUPS = [
+{no:'工-01', cat:'工業類', name:'機械群', hol:'R 型', types:['ISTP','ISTJ'],
+ dept:'機械科、電腦機械製圖科、模具科、鑄造科、板金科、配管科、機械木模科',
+ jobs:'機械工程技術員、CNC 加工技師、模具設計師、生產線技術主管',
+ ria:{R:95,I:62,A:26,S:14,E:24,C:58}, mbti:{EI:20,SN:-65,TF:-70,JP:-10},
+ desc:'把圖面上的尺寸與公差，變成真的可以裝進機台裡的零件。這一群的核心是精度：0.02 公釐的差距，就決定能不能用。',
+ scene:'車床啟動的低頻聲、切削液的味道、卡尺量了三次才確認的數字。',
+ story:'小傑從小喜歡拆玩具，拆完再組回去時眼睛總是發亮。進入機械群後，他從手工具操作一路練到 CNC 數控加工，成為班上最厲害的工匠高手。',
+ tags:['精密量測','電腦製圖','CNC 加工','公差控制'],
+ tasks:['找一段 CNC 或車床加工的實作影片，看完後寫下你覺得最難的一個步驟。',
+        '跟學校借一支游標卡尺，量測身邊三樣東西並記錄到小數點第二位。',
+        '參觀一次技高機械科的實習工場，注意工場的溫度、聲音與安全規範。',
+        '找一位機械科學長姐，問他:「你第一次做壞一個零件時發生什麼事?」']},
+
+{no:'工-02', cat:'工業類', name:'動力機械群', hol:'R 型', types:['ISTP','ESTP'],
+ dept:'汽車科、動力機械科、重機科、農業機械科、軌道車輛科',
+ jobs:'汽車診斷技師、重機械維修工程師、軌道車輛檢修員、賽車技師',
+ ria:{R:96,I:56,A:20,S:26,E:30,C:42}, mbti:{EI:0,SN:-70,TF:-60,JP:35},
+ desc:'車子熄火了、怪聲從哪裡來、為什麼這個症狀對應那個元件。這一群訓練的是「用手與經驗做診斷」的能力。',
+ scene:'舉升機把整台車抬起來，你躺著看底盤，油漬沾滿手套。',
+ story:'阿明從小迷戀賽車，看 F1 轉播就黏在螢幕前。他行動力強、愛冒險、手腦並用——系統告訴他:「你的熱血不是衝動，是引擎的燃料。」',
+ tags:['故障診斷','引擎系統','電控檢修','實車操作'],
+ tasks:['觀察家中或路邊一台機車，說出你認得出來的五個零件名稱與功能。',
+        '查一次汽車定期保養項目表，看看一台車一年需要被檢查哪些東西。',
+        '到技高汽車科的實習場，看學長姐做一次實車檢修。',
+        '問一位技師:「這份工作最需要的體力與耐性是什麼?」']},
+
+{no:'工-03', cat:'工業類', name:'電機電子群', hol:'R + I 型', types:['INTJ','ISTP','INTP'],
+ dept:'電機科、電子科、資訊科、控制科、冷凍空調科、航空電子科',
+ jobs:'自動化控制工程師、電子電路設計師、韌體工程師、冷凍空調技師',
+ ria:{R:80,I:86,A:26,S:16,E:24,C:62}, mbti:{EI:40,SN:25,TF:-80,JP:0},
+ desc:'看不見的電流與訊號，要靠邏輯與量測才抓得住。這一群同時要求動手接線的穩，與推理電路的準。',
+ scene:'三用電表的紅黑棒、麵包板上一排跳線、程式終於讓那顆 LED 亮起來的瞬間。',
+ story:'小智從小沉迷電玩，父母擔心他「只會打遊戲」。探索後發現他對電路邏輯高度敏感、思維系統化——如今他已能設計自動化控制系統。',
+ tags:['電路實作','微控制器','程式邏輯','儀表量測'],
+ tasks:['用線上模擬器接一個最簡單的 LED 電路，讓它亮起來。',
+        '學會看電阻色碼，把五顆不同電阻的數值念出來。',
+        '寫十行以內的程式，控制一個虛擬或實體的輸出裝置。',
+        '參觀電機或電子科的專題成果展，挑一件你看不懂的作品去問。']},
+
+{no:'工-04', cat:'工業類', name:'化工群', hol:'I 型', types:['INTJ','ISTJ','INTP'],
+ dept:'化工科、紡織科、染整科',
+ jobs:'製程工程師、品管檢驗員、材料研發助理、染整技術員',
+ ria:{R:70,I:90,A:22,S:20,E:20,C:66}, mbti:{EI:40,SN:10,TF:-75,JP:-20},
+ desc:'配方、比例、反應條件——這一群把化學從課本搬進實驗室與生產線，強調的是紀律與可重現性。',
+ scene:'量瓶、天平、通風櫃的抽風聲，以及一本寫滿條件與結果的實驗紀錄簿。',
+ story:'小雅從小著迷廚房裡的化學變化:為什麼糖加熱會焦糖化?進入化工群後，她那些「為什麼」終於有了科學解答——她成了穿白袍的魔法師。',
+ tags:['實驗操作','配方比例','品質檢驗','安全規範'],
+ tasks:['在家做一次安全的簡易實驗（如小蘇打與醋），完整記錄用量與現象。',
+        '查一項日常用品的成分表，找出其中三種化學物質的用途。',
+        '了解化工科的實驗室安全規範，列出你覺得最嚴格的三條。',
+        '問化工科學長姐:「實驗失敗時，你怎麼找出是哪個步驟出錯?」']},
+
+{no:'工-05', cat:'工業類', name:'土木建築群', hol:'R 型', types:['ISTJ','ESTJ'],
+ dept:'土木科、建築科、消防工程科、空間測繪科',
+ jobs:'土木工程師、建築師、測量師、施工管理員、消防設備士',
+ ria:{R:86,I:66,A:56,S:26,E:42,C:60}, mbti:{EI:0,SN:-55,TF:-55,JP:-65},
+ desc:'一半是結構計算，一半是空間想像。這一群的作品，最後會變成別人每天生活在裡面的房子與道路。',
+ scene:'工地帽、描圖紙上的平面圖，以及站在鷹架上看整條街的視角。',
+ story:'小傑從小喜歡用積木搭橋，看到工地就忍不住駐足。系統為他生成的故事是:「你是那種把計畫變成現實的人，城市的每一條路都需要像你這樣嚴謹又有耐心的築夢者。」',
+ tags:['製圖與模型','結構概念','工地實務','空間規劃'],
+ tasks:['用紙板做一個 1:50 的房間模型，量出真實尺寸再縮小。',
+        '走一趟你家附近的工地外圍，記錄看到的三種工程機具。',
+        '找一份建築平面圖，試著看懂門、窗、牆的符號。',
+        '問建築科學生:「你花最多時間的是設計，還是製圖?」']},
+
+{no:'商-01', cat:'商業類', name:'商業管理群', hol:'E + C 型', types:['ESTJ','ENTJ','ISTJ'],
+ dept:'商業經營科、國際貿易科、會計事務科、資料處理科、電子商務科、不動產事務科',
+ jobs:'企業管理師、電商創業家、財務分析師、會計事務員、國貿業務',
+ ria:{R:24,I:42,A:26,S:52,E:86,C:92}, mbti:{EI:-30,SN:-30,TF:-55,JP:-70},
+ desc:'錢怎麼流、貨怎麼走、帳怎麼平。這一群同時需要對數字的細心，與對人的敏感。',
+ scene:'試算表裡一格對不起來的差額，和你花了四十分鐘把它找出來的成就感。',
+ story:'小雅從小對數字特別敏感，喜歡幫家裡記帳、分析優惠方案。老師說她是「天生的管理者」——不只會算，還懂得規劃與領導。',
+ tags:['會計帳務','電商經營','試算表','商務溝通'],
+ tasks:['幫家裡記一週的收支帳，做成一張分類清楚的表格。',
+        '找一個你喜歡的網路賣家，分析它的商品文案為什麼吸引你。',
+        '學會試算表的 SUM 與 IF 兩個函數，做出一張成績統計表。',
+        '問一位商科學長姐:「會計最難的是計算，還是規則?」']},
+
+{no:'商-02', cat:'商業類', name:'外語群', hol:'S + E 型', types:['ENFJ','ESFJ','ENFP'],
+ dept:'應用外語科（英文組）、應用外語科（日文組）',
+ jobs:'國際貿易業務、外交翻譯、跨文化教育、觀光導覽、語言教學',
+ ria:{R:16,I:52,A:56,S:80,E:66,C:56}, mbti:{EI:-55,SN:25,TF:75,JP:0},
+ desc:'語言不只是科目，是工作工具。這一群把聽說讀寫練到能在會展、櫃檯與商務現場直接使用。',
+ scene:'一段你聽了七遍才聽懂的對話，和第一次被外國人聽懂時的耳朵發熱。',
+ story:'小雅從小喜歡模仿外國影集的口音，媽媽卻擔心「學語言能找到工作嗎?」——她不只是會說外語，而是能用語言打開人與人之間的心門。',
+ tags:['會話實務','商務書信','口譯基礎','跨文化溝通'],
+ tasks:['連續七天，每天用外語說滿三分鐘並錄下來。',
+        '看一支無字幕的短影片，寫下你聽懂的關鍵句。',
+        '找一封英文商務信範例，分析它的開頭與結尾格式。',
+        '問應外科學生:「你最常用到外語的實際場合是什麼?」']},
+
+{no:'農-01', cat:'農業類', name:'農業群', hol:'R 型', types:['ISTJ','ISTP'],
+ dept:'農場經營科、園藝科、森林科、畜產保健科、野生動物保育科',
+ jobs:'農場經營者、園藝技術員、林業技術員、畜產保健助理',
+ ria:{R:86,I:72,A:32,S:46,E:36,C:42}, mbti:{EI:25,SN:-60,TF:-45,JP:-15},
+ desc:'和生命一起工作，意味著要遵守季節、也要接受意外。這一群結合了戶外體力、生物知識與長期觀察。',
+ scene:'清晨六點的溫室、記錄了三個月的生長日誌，以及第一次成功育苗。',
+ story:'小綠從小喜歡在田裡挖土、觀察植物生長。別人看到的是泥巴，他看到的是生命的奇蹟——用雙手與土地對話。',
+ tags:['田間管理','植物繁殖','動物照護','生態觀察'],
+ tasks:['種一盆植物並連續記錄三十天的生長情形與澆水量。',
+        '認出住家附近五種植物的名字與特性。',
+        '參觀一次農場或苗圃，問經營者一年最忙的是哪個月。',
+        '了解一項農業科技（如溫室環控），說出它解決了什麼問題。']},
+
+{no:'農-02', cat:'農業類', name:'食品群', hol:'R + I 型', types:['ISFJ','ISTJ','ISFP'],
+ dept:'食品加工科、食品科、水產食品科',
+ jobs:'食品研發人員、品保檢驗員、烘焙技師、食品安全稽核員',
+ ria:{R:76,I:72,A:42,S:40,E:40,C:64}, mbti:{EI:40,SN:-55,TF:20,JP:-25},
+ desc:'從原料到成品，中間是溫度、時間與衛生的精確控制。好吃只是門檻，安全與穩定才是專業。',
+ scene:'烘焙教室的定時器、恆溫水槽，以及一張寫得密密麻麻的製程紀錄表。',
+ story:'小雯從小迷戀廚房裡的化學魔法:為什麼麵包會膨脹?醬油是怎麼釀成的?她細心、有耐心、重視品質——是用科學守護味蕾的工匠。',
+ tags:['加工製程','食品安全','檢驗分析','品質管制'],
+ tasks:['做一次需要精確秤重的烘焙，記錄每個步驟的時間與溫度。',
+        '讀懂三項包裝食品的營養標示與保存期限標示方式。',
+        '查一次食品中毒的常見原因，列出可以預防的三個關鍵。',
+        '問食品科學生:「實習課最花時間的是製作，還是清潔?」']},
+
+{no:'家-01', cat:'家事類', name:'家政群', hol:'S 型', types:['ISFJ','ESFJ','ISFP'],
+ dept:'家政科、服裝科、美容科、時尚造型科、時尚模特兒科',
+ jobs:'服裝設計助理、美容美髮師、時尚造型師、生活美學規劃者',
+ ria:{R:52,I:24,A:80,S:70,E:46,C:38}, mbti:{EI:0,SN:-30,TF:75,JP:-15},
+ desc:'把美的感受變成專業技能——服裝、造型、空間、生活。這一群的成果不只是作品，而是別人臉上的變化。',
+ scene:'假人頭上第二十次重來的編髮、縫紉機的節奏，以及客人照鏡子時的那個表情。',
+ story:'小雯從小熱愛布置房間、縫製衣物，總能讓平凡空間變得溫馨美麗。家政群讓她把對「美」的感受，轉化為真正的專業技能。',
+ tags:['服裝製作','美容美髮','生活美學','造型設計'],
+ tasks:['幫家人做一次完整的造型或服裝搭配，並說明你的理由。',
+        '學會一項基本手作技能（縫扣、編髮、簡易妝容）。',
+        '把自己的房間重新配置一次，拍下前後對照並寫下理由。',
+        '問家政科學生:「術科練習最花時間的是哪一項?」']},
+
+{no:'家-02', cat:'家事類', name:'餐旅群', hol:'S + E 型', types:['ESFJ','ESFP','ENFJ'],
+ dept:'餐飲管理科、觀光事業科',
+ jobs:'飯店管理、旅遊規劃師、餐飲服務、活動企劃、國際領隊',
+ ria:{R:60,I:26,A:56,S:90,E:72,C:46}, mbti:{EI:-65,SN:-25,TF:70,JP:-10},
+ desc:'高壓、即時、面對面。出餐的十分鐘內要同時處理流程、品質與客人的情緒，體力與情緒穩定同樣重要。',
+ scene:'內場的鈴聲與外場的招呼聲同時響起，你要在三秒內決定先處理哪一邊。',
+ story:'小雅天生熱愛與人互動。在餐廳實習時她發現，每一道精心擺盤的料理、每一個真誠的微笑，都能讓客人感受到家的溫暖。',
+ tags:['中西餐製備','飲調實務','旅運規劃','顧客服務'],
+ tasks:['為家人設計並完成一套三道菜的餐點，含採買與時間規劃。',
+        '規劃一趟兩天一夜的行程，含交通、預算與備案。',
+        '在一家餐廳觀察外場人員十五分鐘，記錄他同時做了幾件事。',
+        '問餐飲科學生:「站一整天的實習課，你怎麼撐過來?」']},
+
+{no:'家-03', cat:'家事類', name:'幼保群', hol:'S 型', types:['ISFJ','ESFJ','ENFJ'],
+ dept:'幼兒保育科',
+ jobs:'幼兒園教保員、托育人員、兒童課後照顧、親職教育工作者',
+ ria:{R:38,I:26,A:52,S:94,E:40,C:44}, mbti:{EI:-15,SN:-20,TF:85,JP:-45},
+ desc:'陪一個還不會說完整句子的人長大。這一群需要的不是喜歡小孩而已，而是能在吵鬧與突發狀況中，仍然穩住自己的耐心。',
+ scene:'午睡時間的教室、二十雙同時看著你的眼睛，以及被小朋友抱住的那一刻。',
+ story:'小柔從小喜歡照顧弟弟妹妹，總是耐心陪他們玩遊戲、說故事。在幼保群，她的溫柔與耐心成為最珍貴的專業能力。',
+ tags:['幼兒發展','教保實務','活動設計','親職溝通'],
+ tasks:['照顧一位年幼的親友半天，記錄他讓你意外的三個行為。',
+        '設計一個十五分鐘、適合三歲孩子的遊戲活動並實際帶一次。',
+        '觀察一間幼兒園的作息表，數數看老師一天要切換幾種角色。',
+        '問幼保科學生:「和小孩相處，最耗費心力的是什麼?」']},
+
+{no:'藝-01', cat:'藝術類', name:'設計群', hol:'A 型', types:['ISFP','INFP','ENFP'],
+ dept:'廣告設計科、多媒體設計科、室內空間設計科、圖文傳播科、美工科、家具木工科、金屬工藝科、陶瓷工程科',
+ jobs:'視覺傳達設計師、室內設計師、工業設計師、多媒體創作者',
+ ria:{R:56,I:42,A:96,S:36,E:46,C:34}, mbti:{EI:15,SN:50,TF:65,JP:70},
+ desc:'設計不是把東西弄漂亮，是替一個問題找到看得懂的答案。這一群要求手感、美感，也要求能說明你的選擇。',
+ scene:'第七版草稿被退回，然後你發現第八版真的比較好。',
+ story:'小雨從小愛畫畫，但爸媽覺得「設計沒出路」。分析後發現她對美感極度敏銳、創意源源不絕——她不是叛逆，她是用美學改變世界的創造者。',
+ tags:['造型基礎','電腦繪圖','作品集','提案簡報'],
+ tasks:['連續十天，每天畫一張三分鐘速寫，累積成一本小冊子。',
+        '挑一個你覺得設計很糟的標示牌，重新設計它並說明理由。',
+        '學會一套繪圖軟體的基本操作，做出一張海報。',
+        '看一次設計科的畢業展，記下三件讓你想問「怎麼做的」的作品。']},
+
+{no:'藝-02', cat:'藝術類', name:'藝術群', hol:'A 型', types:['INFP','ISFP','ENFP'],
+ dept:'音樂科、國樂科、舞蹈科、美術科、戲劇科、影劇科、電影電視科、時尚工藝科',
+ jobs:'表演工作者、音樂演奏／製作、影像創作者、舞台技術人員',
+ ria:{R:36,I:30,A:98,S:56,E:46,C:20}, mbti:{EI:20,SN:60,TF:70,JP:75},
+ desc:'技術可以被教，但練習必須自己撐。這一群的日常是大量重複的基本功，加上必須被看見的作品產出。',
+ scene:'空無一人的琴房或排練室，同一個八拍你已經跳了四十遍。',
+ story:'小雅從小愛塗鴉，課本空白處全是她的插畫世界。傳統測驗說她「不夠專注」，但她擁有的是豐沛的感性創造力與獨特的審美直覺。',
+ tags:['術科基本功','展演實務','創作發表','舞台技術'],
+ tasks:['連續二十一天，每天練習同一項術科基本功十五分鐘並記錄。',
+        '完整看完一場現場展演，寫下三個你想學會的技術細節。',
+        '公開發表一次自己的作品（班上、社群、社團皆可）。',
+        '問藝術科學生:「術科考試前，你的一天怎麼安排?」']},
+
+{no:'海-01', cat:'海事水產類', name:'海事水產群', hol:'R 型', types:['ISTP','ESTP'],
+ dept:'航海科、輪機科、水產養殖科、漁業科',
+ jobs:'商船船副／輪機員、航運管理、水產養殖經營、漁業技術員',
+ ria:{R:92,I:66,A:18,S:32,E:42,C:50}, mbti:{EI:5,SN:-60,TF:-55,JP:20},
+ desc:'海上沒有人可以叫，所有程序都必須背進身體裡。這一群訓練的是紀律、值班能力，以及在移動與不確定中保持精準。',
+ scene:'搖晃的甲板、必須在固定時間完成的值班紀錄，以及凌晨池邊溶氧機的水聲。',
+ story:'阿浪從小在基隆漁港長大。別人看海只看到浪，他卻看到風向、洋流與魚群的軌跡——最愛的是在甲板上迎著海風解決機械故障。',
+ tags:['航海實務','輪機操作','養殖管理','水質檢測'],
+ tasks:['了解商船船員一天的值班班表，寫下你覺得最難適應的一段。',
+        '學會看懂海圖上的三種基本符號。',
+        '參觀一次漁港、養殖場或海事學校的模擬駕駛台。',
+        '問海事水產科學生:「長時間離家或颱風來時，你們怎麼因應?」']}
+];
+
+/* ---------- 文化象徵（僅用於敘事，不參與計算） ---------- */
+var ZODIAC = [
+ [1,20,'水瓶座','習慣站得稍微遠一點看事情，因此常常先看到別人沒注意的角度'],
+ [2,19,'雙魚座','對氣氛與情緒的變化特別敏感，想像力是你的隱形工具'],
+ [3,21,'牡羊座','行動比猶豫快，你常常是先做了才回頭想怎麼做更好'],
+ [4,20,'金牛座','你相信慢慢累積的東西，扎實比快速更讓你安心'],
+ [5,21,'雙子座','資訊在你腦中流動得快，你享受同時接觸很多種可能'],
+ [6,22,'巨蟹座','你把在乎的人事物護在身後，穩定的關係讓你發揮得最好'],
+ [7,23,'獅子座','你需要被看見，也願意為此扛下站在前面的責任'],
+ [8,23,'處女座','你注意到別人跳過的細節，那是嚴謹，不是挑剔'],
+ [9,23,'天秤座','你習慣同時考慮兩邊，決定慢是因為你真的在權衡'],
+ [10,24,'天蠍座','你投入的時候非常深，不做則已，一做就想做到底'],
+ [11,23,'射手座','你需要空間與遠方，被關太久會讓你失去動力'],
+ [12,22,'摩羯座','你把目標拆成階段，一步一步走是你最踏實的方式']
+];
+var SHENG = ['猴','雞','狗','豬','鼠','牛','虎','兔','龍','蛇','馬','羊'];
+var SHENG_TX = {
+ 鼠:'機靈、擅長找出縫隙裡的機會', 牛:'耐得住重複與長期投入',
+ 虎:'敢於承擔，行動有魄力', 兔:'細膩、擅長維持關係的平衡',
+ 龍:'企圖心強，喜歡把事情做大', 蛇:'觀察深，出手前先想清楚',
+ 馬:'需要移動與變化，靜不下來是你的動力', 羊:'溫和而有自己的美感堅持',
+ 猴:'反應快，喜歡把難題玩成遊戲', 雞:'講究條理，對品質有要求',
+ 狗:'重承諾，是團隊裡最可靠的那個', 豬:'不計較，容易讓人放心靠近'
+};
+var BLOOD_TX = {
+ A:'習慣把事情先想周全再動手', B:'照著自己的節奏走，不太受外界干擾',
+ O:'目標導向，遇到阻礙會先想辦法繞過去', AB:'同時具備兩種相反的模式，切換得比別人快'
+};
+
+/* =============== STATE（僅存在於記憶體） =============== */
+var S = {
+  step:0,
+  info:{name:'', birth:'', sex:'', blood:'', stage:'國中九年級', culture:true},
+  mbti:new Array(32).fill(0),
+  ria:new Array(36).fill(0),
+  task:new Array(12).fill(0),
+  res:null,
+  done:{}
+};
+
+var $ = function(s,r){ return (r||document).querySelector(s); };
+var $$ = function(s,r){ return Array.prototype.slice.call((r||document).querySelectorAll(s)); };
+function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function toast(msg){
+  var t=$('#toast'); t.textContent=msg; t.classList.add('on');
+  clearTimeout(t._tm); t._tm=setTimeout(function(){ t.classList.remove('on'); },2200);
+}
+
+/* =============== 題目渲染 =============== */
+function buildQuestions(host, bank, key){
+  var html='', total=bank.length;
+  bank.forEach(function(q,i){
+    if(i%12===0){
+      var to=Math.min(i+12,total);
+      html+='<div class="qhd">Items '+(i+1)+'–'+to+' <span>共 '+total+' 題</span></div>';
+    }
+    html+='<div class="q'+(i%2?' alt':'')+'" data-i="'+i+'">'+
+      '<div class="q-tx"><i>'+String(i+1).padStart(2,'0')+'</i><span>'+esc(q.t)+'</span></div>'+
+      '<div class="scale" role="group" aria-label="第 '+(i+1)+' 題作答">'+
+        [1,2,3,4,5].map(function(v){
+          return '<button type="button" data-v="'+v+'" aria-pressed="false" aria-label="'+v+' 分">'+v+'</button>';
+        }).join('')+
+      '</div></div>';
+  });
+  host.innerHTML=html;
+  host.addEventListener('click', function(e){
+    var b=e.target.closest('button[data-v]'); if(!b) return;
+    var row=b.closest('.q'), i=+row.dataset.i, v=+b.dataset.v;
+    S[key][i]=v;
+    $$('button[data-v]', row).forEach(function(x){ x.setAttribute('aria-pressed', x===b?'true':'false'); });
+    updateProgress();
+  });
+}
+
+function answered(arr){ return arr.filter(function(v){ return v>0; }).length; }
+
+function updateProgress(){
+  var labels=['基本資料','MBTI 認知風格','RIASEC 興趣','真實任務偏好','生成敘事'];
+  var pct, sub;
+  if(S.step===0){ pct=0; sub=''; }
+  else if(S.step===1){ var a=answered(S.mbti); pct=a/32*100; sub=' · 已作答 '+a+'/32'; }
+  else if(S.step===2){ var b=answered(S.ria); pct=b/36*100; sub=' · 已作答 '+b+'/36'; }
+  else if(S.step===3){ var c=answered(S.task); pct=c/12*100; sub=' · 已作答 '+c+'/12'; }
+  else { pct=100; sub=''; }
+  $('#prog-i').style.width=pct.toFixed(0)+'%';
+  $('#prog-t').textContent='STEP 0'+(S.step+1)+' / 05 · '+labels[S.step]+sub;
+
+  var mh=$('#mbti-hint'), rh=$('#riasec-hint'), th=$('#task-hint');
+  var m32=32-answered(S.mbti), r36=36-answered(S.ria), t12=12-answered(S.task);
+  mh.innerHTML = m32? '還有 <span class="warn">'+m32+'</span> 題未作答。未作答的題目會以 3 分（普通）計入。' : '全部作答完成。';
+  rh.innerHTML = r36? '還有 <span class="warn">'+r36+'</span> 題未作答。未作答的題目會以 3 分（普通）計入。' : '全部作答完成。';
+  th.innerHTML = t12? '還有 <span class="warn">'+t12+'</span> 題未作答。未作答的題目會以 3 分（普通）計入。' : '全部作答完成。';
+}
+
+/* =============== 步驟切換 =============== */
+function goStep(n){
+  S.step=Math.max(0,Math.min(4,n));
+  $$('.panel').forEach(function(p){ p.hidden = (+p.dataset.panel !== S.step); });
+  $$('.step').forEach(function(b){
+    var i=+b.dataset.step;
+    b.setAttribute('aria-current', i===S.step?'true':'false');
+    b.classList.toggle('done', i<S.step);
+  });
+  $('#prev').disabled = S.step===0;
+  $('#next').disabled = S.step===4;
+  if(S.step===4) renderReady();
+  updateProgress();
+  var wb=$('#workbench');
+  if(wb.getBoundingClientRect().top < -40 || wb.getBoundingClientRect().top > window.innerHeight){
+    wb.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+}
+
+function renderReady(){
+  var rows=[
+    ['基本資料', S.info.name? '已填寫（'+esc(S.info.name)+'）':'未填寫（將以「探索者」稱呼）', S.info.name?'var(--green)':'var(--rule-strong)'],
+    ['MBTI 32 題', answered(S.mbti)+' / 32 題已作答', answered(S.mbti)===32?'var(--green)':'var(--accent)'],
+    ['RIASEC 36 題', answered(S.ria)+' / 36 題已作答', answered(S.ria)===36?'var(--green)':'var(--accent)'],
+    ['真實任務 12 題', answered(S.task)+' / 12 題已作答', answered(S.task)===12?'var(--green)':'var(--accent)'],
+    ['生涯階段（Super）', S.info.birth? superStage(S.info.birth).age+' 歲 · '+SUPER[superStage(S.info.birth).i].k : '未填出生年月日，將以「探索期」預設顯示', S.info.birth?'var(--green)':'var(--rule-strong)'],
+    ['文化趣味模式', !S.info.culture ? '已關閉，將不生成 C 版文化型敘事'
+        : (S.info.birth? '已開啟 · 星座與生肖已推算'+(S.info.blood?'、血型已填寫':'（血型未填）') : '已開啟，但未填出生年月日，將略過文化象徵段落'),
+      S.info.culture? 'var(--violet)':'var(--rule-strong)']
+  ];
+  $('#ready').innerHTML = rows.map(function(r){
+    return '<div class="gap" style="--gc:'+r[2]+'"><h5>'+r[0]+'</h5><p>'+r[1]+'</p></div>';
+  }).join('');
+}
+
+/* =============== 計分 =============== */
+function scoreMBTI(){
+  var ax={EI:0,SN:0,TF:0,JP:0};
+  MBTI_Q.forEach(function(q,i){ ax[q.d]+= q.r*((S.mbti[i]||3)-3); });
+  var out={};
+  Object.keys(ax).forEach(function(k){ out[k]=Math.max(-100,Math.min(100, Math.round(ax[k]/16*100))); });
+  return out;
+}
+function letterOf(dim,v){
+  return v>0 ? {EI:'I',SN:'N',TF:'F',JP:'P'}[dim] : {EI:'E',SN:'S',TF:'T',JP:'J'}[dim];
+}
+function mbtiCode(M){ return letterOf('EI',M.EI)+letterOf('SN',M.SN)+letterOf('TF',M.TF)+letterOf('JP',M.JP); }
+
+function scoreRIA(){
+  var s={R:0,I:0,A:0,S:0,E:0,C:0};
+  RIASEC_Q.forEach(function(q,i){ s[q.k]+=((S.ria[i]||3)-1); });
+  var o={}; RIA_KEYS.forEach(function(k){ o[k]=Math.round(s[k]/24*100); });
+  return o;
+}
+function scoreTASK(){
+  var s={R:0,I:0,A:0,S:0,E:0,C:0};
+  TASK_Q.forEach(function(q,i){ s[q.k]+=((S.task[i]||3)-1); });
+  var o={}; RIA_KEYS.forEach(function(k){ o[k]=Math.round(s[k]/8*100); });
+  return o;
+}
+function topKeys(obj,n){
+  return RIA_KEYS.slice().sort(function(a,b){ return obj[b]-obj[a]; }).slice(0,n);
+}
+function pearson(a,b){
+  var n=a.length, ma=0, mb=0, i;
+  for(i=0;i<n;i++){ ma+=a[i]; mb+=b[i]; }
+  ma/=n; mb/=n;
+  var num=0, da=0, db=0;
+  for(i=0;i<n;i++){ var x=a[i]-ma, y=b[i]-mb; num+=x*y; da+=x*x; db+=y*y; }
+  if(da===0||db===0) return 0;
+  return num/Math.sqrt(da*db);
+}
+function vec(o){ return RIA_KEYS.map(function(k){ return o[k]; }); }
+function mbtiFit(u,g){
+  var ks=['EI','SN','TF','JP'], raw=0, mx=0;
+  ks.forEach(function(k){ raw += (u[k]/100)*(g[k]/100); mx += Math.abs(g[k]/100); });
+  if(mx===0) return 0.5;
+  return (raw/mx+1)/2;
+}
+function matchGroups(R,T,M,code){
+  var uR=vec(R), uT=vec(T);
+  return GROUPS.map(function(g){
+    var gv=vec(g.ria);
+    var iF=(pearson(uR,gv)+1)/2;
+    var tF=(pearson(uT,gv)+1)/2;
+    var mF=mbtiFit(M,g.mbti);
+    /* 簡報載明之「群科 × MBTI 建議型」對照：命中則給予加權 */
+    var typeHit = g.types.indexOf(code)>-1;
+    var raw = iF*0.5 + tF*0.3 + mF*0.2;
+    if(typeHit) raw = Math.min(1, raw + 0.06);
+    return {g:g, iF:iF, tF:tF, mF:mF, hit:typeHit, score:Math.round(raw*100)};
+  }).sort(function(a,b){ return b.score-a.score; });
+}
+
+/* Super 生涯發展階段定位 */
+function superStage(birth){
+  var idx=1, age=null;
+  if(birth){
+    var p=birth.split('-');
+    if(p.length===3){
+      var d=new Date(+p[0], +p[1]-1, +p[2]), n=new Date();
+      age=n.getFullYear()-d.getFullYear();
+      var mm=n.getMonth()-d.getMonth();
+      if(mm<0 || (mm===0 && n.getDate()<d.getDate())) age--;
+    }
+  }
+  if(age===null) return {i:1, age:null};
+  if(age<=14) idx=0; else if(age<=24) idx=1; else if(age<=44) idx=2;
+  else if(age<=64) idx=3; else idx=4;
+  return {i:idx, age:age};
+}
+
+/* =============== 文化象徵 =============== */
+function zodiacOf(m,d){
+  for(var i=11;i>=0;i--){
+    if(m>ZODIAC[i][0] || (m===ZODIAC[i][0] && d>=ZODIAC[i][1])) return ZODIAC[i];
+  }
+  return ZODIAC[11];
+}
+function cultureOf(birth, blood){
+  if(!birth) return null;
+  var p=birth.split('-'); if(p.length!==3) return null;
+  var y=+p[0], m=+p[1], d=+p[2];
+  if(!y||!m||!d) return null;
+  var z=zodiacOf(m,d), sg=SHENG[((y%12)+12)%12];
+  return {y:y, zod:z[2], zodTx:z[3], sheng:sg, shengTx:SHENG_TX[sg]||'', blood:blood||'', bloodTx: blood? (BLOOD_TX[blood]||'') : ''};
+}
+
+/* =============== 敘事生成 =============== */
+function gapList(R,T){
+  var out=[];
+  RIA_KEYS.forEach(function(k){
+    var g=R[k]-T[k];
+    if(Math.abs(g)>=20) out.push({k:k, gap:g, r:R[k], t:T[k]});
+  });
+  out.sort(function(a,b){ return Math.abs(b.gap)-Math.abs(a.gap); });
+  return out.slice(0,3);
+}
+
+function narrStructural(res){
+  var M=res.M, R=res.R, T=res.T, code=res.code, nm=res.nm;
+  var t=MBTI_T[code];
+  var axes=['EI','SN','TF','JP'];
+  var sorted=axes.slice().sort(function(a,b){ return Math.abs(M[b])-Math.abs(M[a]); });
+  var strong=sorted[0], sl=letterOf(strong,M[strong]);
+  var mid=axes.filter(function(k){ return Math.abs(M[k])<=15; });
+  var t3=res.top3;
+  var h='';
+  h+='<p class="lead">'+esc(nm)+'，這是你此刻的結構座標：認知風格 <strong>'+code+'</strong>（'+t[0]+'），興趣三碼 <strong>'+t3.join('')+'</strong>。</p>';
+  h+='<p>四個向度中，你最明確的是<strong>'+AXIS_TX[sl][0]+'</strong>（強度 '+Math.abs(M[strong])+'/100）：'+AXIS_TX[sl][1]+'其餘三個向度依序為 '+
+      sorted.slice(1).map(function(k){ var l=letterOf(k,M[k]); return AXIS_TX[l][0]+' '+Math.abs(M[k]); }).join('、')+'。'+
+      (mid.length? '其中有 '+mid.length+' 個向度落在 ±15 以內（'+mid.map(function(k){ return letterOf(k,M[k]); }).join('、')+'），代表在這些面向上你兩端都用得順，會隨情境切換——這是彈性，不是不明確。' : '四個向度都相當明確，代表你的運作模式相當穩定，也比較清楚自己在什麼環境下最有效率。')+'</p>';
+  h+='<p>興趣結構上，你的前三高是 '+t3.map(function(k){ return RIA_NAME[k]+' '+k+' '+R[k]+'%'; }).join('、')+'；最低的是 '+
+      RIA_NAME[res.low]+' '+res.low+' '+R[res.low]+'%。與之對照，你在對應真實任務上的<strong>意願</strong>分別是 '+
+      t3.map(function(k){ return k+' '+T[k]+'%'; }).join('、')+'。'+
+      (res.gaps.length? '兩者之間有 '+res.gaps.length+' 個向度出現 20 分以上的落差，詳見上方的差異提醒。' : '興趣與實作意願之間沒有出現明顯落差，代表你想做的事和你願意做的事相當一致——這是相對難得的狀態。')+'</p>';
+  h+='<p>把三份資料一起放進餘弦相似度配對模型（興趣 50%、任務意願 30%、認知風格 20%，建議型命中另加權），15 群科中相似度最高的三群是：'+
+      res.matches.map(function(m,i){ return '<strong>'+m.g.name+'</strong>（'+m.score+'）'; }).join('、')+'。'+
+      '第一名與第三名的差距為 '+(res.matches[0].score-res.matches[2].score)+' 分，'+
+      ((res.matches[0].score-res.matches[2].score)<=5? '差距很小，代表這三群對你而言幾乎同樣值得探索，不必急著排序。' : '差距明顯，代表你的傾向相對集中，可以優先從第一名開始體驗。')+'</p>';
+  h+='<p class="qt">結構型敘事的用途，是讓你在面談、備審資料或跟家人說明時，有一組可以被追問、也答得出來的具體語言。當有人問「你為什麼想選這一群」，你可以從這一段開始講。</p>';
+  return h;
+}
+
+function narrStory(res){
+  var M=res.M, R=res.R, nm=res.nm, g=res.matches[0].g, code=res.code;
+  var isI=letterOf('EI',M.EI)==='I';
+  var isN=letterOf('SN',M.SN)==='N';
+  var isF=letterOf('TF',M.TF)==='F';
+  var isP=letterOf('JP',M.JP)==='P';
+  var k1=res.top3[0];
+  var h='';
+  h+='<p class="lead">如果把'+esc(nm)+'的某一個星期三拍成影片，鏡頭大概會這樣走。</p>';
+  h+='<p>早自習的鐘響過了。'+(isI?'你沒有加入後排那圈熱鬧的討論，而是把耳機戴上，讓周圍的聲音退到一層之外——不是不合群，是你知道自己需要先安靜一下，腦子才開始工作。':'你已經在教室裡繞了半圈，跟三個人講過話，順手幫忙搬了椅子。你的一天是從「有人回應你」開始暖機的。')+
+     (isN?'老師講到某個名詞，你的思緒立刻岔出去，開始想「如果把這個用在別的地方會怎樣」。':'老師講到某個步驟，你在課本邊上把它抄成一條一條——你要的是講得清楚、做得出來。')+'</p>';
+  h+='<p>下午是實習課。'+esc(g.scene)+'你發現自己在這種時候特別安靜，而且不覺得累。'+
+     '你的'+RIA_NAME[k1]+'傾向（'+R[k1]+'%）在這裡完全用得上：'+
+     ({R:'手比腦快，但每一次都比上一次準一點。',I:'你不急著做完，你急著弄懂為什麼。',A:'你在意的不只是完成，是它好不好看、對不對味。',S:'你會先看旁邊的人卡在哪裡，然後走過去。',E:'你想的是「這個做出來以後，可以拿去給誰看」。',C:'你把每個步驟都對過一次，才敢說完成。'}[k1])+'</p>';
+  h+='<p>放學前，'+(isF?'有同學心情不好，你什麼都沒說，只是留下來陪他一起等公車。你一直知道，有些事不需要被分析，只需要有人在。':'你把今天沒弄懂的地方寫下來，決定回家查清楚。你不太能忍受「差不多懂了」這種狀態。')+
+     (isP?'回家的路上你臨時決定換一條沒走過的巷子——反正時間還早，繞一下說不定會看到什麼。':'回家的路上你已經在心裡排好晚上的順序：先寫哪一科、幾點洗澡、幾點睡。')+'</p>';
+  h+='<p>這一天沒有發生任何大事。但如果有人問你「你是誰」，答案其實就藏在這些不起眼的選擇裡——'+
+     '你選擇安靜還是熱鬧、選擇追問還是照做、選擇陪人還是解題。'+
+     '<strong>'+code+'</strong> 只是這些選擇的縮寫；'+g.name+'，則是把這些選擇放大成一整個專業領域之後，可能長成的樣子之一。</p>';
+  h+='<p class="qt">故事型敘事不是要你相信它。它是一面鏡子——你讀的時候心裡有沒有「對，這就是我」或「不對，我才不是這樣」，那個反應本身，比文字更有用。</p>';
+  return h;
+}
+
+function narrCultural(res){
+  var c=res.cul, nm=res.nm, k1=res.top3[0], g=res.matches[0].g;
+  var h='';
+  if(!res.culOn){
+    return '<p class="lead">文化趣味模式目前為關閉狀態。</p>'+
+      '<p>這是預期中的使用方式之一。本模式為<b>可開關設計</b>，讓不同校風的學校可以自行決定要不要在生涯輔導課程中，'+
+      '使用星座、生肖、血型這類文化語彙作為切入點。關閉之後，系統的科學語言（RIASEC × MBTI）與'+
+      '生涯語言（Super 生涯發展階段）完全不受影響——因為文化語言本來就不參與任何計算。</p>'+
+      '<p>如果你想看看這個版本長什麼樣子，回到步驟一把開關打開再生成一次即可。'+
+      '它最主要的用途，其實不是給學生看，而是<b>給帶著命理語彙來談孩子的家長看</b>。</p>';
+  }
+  if(c){
+    h+='<p class="lead">'+esc(nm)+'，'+c.zod+'的人，據說'+c.zodTx+'；'+c.y+' 年是'+c.sheng+'年，屬'+c.sheng+'的人常被形容為'+c.shengTx+
+        (c.bloodTx? '；而 '+c.blood+' 型的人，總被說'+c.bloodTx : '')+'。</p>';
+    h+='<p>先說清楚：以上這些說法<strong>沒有科學根據</strong>，它們不能預測你的能力，也不該用來決定你讀哪一科。'+
+        '但它們有一個很真實的用途——在台灣的教室、餐桌與班群裡，這是大家共用的語彙。'+
+        '當你還說不出「我的認知風格偏向內向直覺」的時候，一句「我'+c.zod+'的啦」往往更容易讓對話開始。</p>';
+    h+='<p>那就把這套語彙翻回系統的語言試試看。你的興趣主碼是 <strong>'+RIA_NAME[k1]+'（'+k1+'）</strong>，'+
+        '權重 '+res.R[k1]+'%。如果'+c.zod+'的那句「'+c.zodTx+'」讓你點頭，那它描述的其實是你在'+RIA_TASK[k1]+'這類情境裡的行為模式；'+
+        '如果你覺得完全不像，那更值得注意——因為那代表你比刻板印象複雜，而複雜通常是好事。</p>';
+    h+='<p>順帶一提，'+g.name+'裡有各種星座、各種生肖、各種血型的人，而且做得好的都有。'+
+        '真正決定你在那裡過得好不好的，是你願不願意在'+RIA_TASK[k1]+'這件事上，重複很多次。</p>';
+  } else {
+    h+='<p class="lead">'+esc(nm)+'，你沒有填寫出生年月日，所以這一段沒有星座與生肖可以說。</p>';
+    h+='<p>其實這樣也好。文化型敘事的設計初衷，本來就不是為了增加準確度，而是為了降低開口的門檻——'+
+        '讓還不習慣談論自己的人，有一個熟悉的入口。你既然已經走完了前面 80 題，就代表你不太需要那個入口了。</p>';
+    h+='<p>如果你想補上這一段，回到步驟一填入出生年月日即可（系統只會在你的瀏覽器裡推算星座與生肖，不會傳出去）。'+
+        '或者，你也可以直接用系統的語言描述自己：<strong>'+res.code+' × '+res.top3.join('')+'</strong>——'+
+        '這串代碼比任何星座都更貼近你剛才的作答。</p>';
+  }
+  h+='<p style="margin-top:22px"><strong>家長焦慮轉譯對照表</strong><br>'+
+      '這張表是文化趣味模式最實際的用途。當家長帶著命理語彙來談孩子時，把左欄換成右欄，'+
+      '對話就會從「命定」轉向「怎麼安排」。這不是承認命理有效，而是承認<b>那是家長此刻聽得懂的語言</b>。</p>';
+  h+='<div class="trx"><div class="trx-hd"><span>家長常說的話</span><span>轉譯成教育策略</span></div>'+
+      TRANSLATE.map(function(t){
+        return '<div class="trx-row"><div class="trx-a">'+t.a+'</div>'+
+          '<div class="trx-b"><b>'+t.b+'</b><span>'+t.c+'</span></div></div>';
+      }).join('')+'</div>';
+  h+='<p class="disc"><b>使用界線：</b>星座、生肖、血型與命理語彙在本系統中<b>完全不參與</b>群科配對計算，也不影響任何分數。'+
+      '本模式不涉及占卜或預測，僅作為提升初始參與度的文化入口與親師溝通媒介。'+
+      '任何把它們當成能力預測或選填依據的用法，都不是本系統的設計意圖。各校可於步驟一關閉此模式。</p>';
+  return h;
+}
+
+/* =============== 結果渲染 =============== */
+function generate(){
+  var M=scoreMBTI(), R=scoreRIA(), T=scoreTASK();
+  var code=mbtiCode(M);
+  var t3=topKeys(R,3);
+  var low=RIA_KEYS.slice().sort(function(a,b){ return R[a]-R[b]; })[0];
+  var all=matchGroups(R,T,M,code);
+  var gaps=gapList(R,T);
+  var maxGap=gaps.reduce(function(a,x){ return Math.max(a,Math.abs(x.gap)); },0);
+  var res={
+    M:M, R:R, T:T, code:code, top3:t3, low:low,
+    nm:S.info.name||'探索者',
+    matches:all.slice(0,3), all:all,
+    gaps:gaps, maxGap:maxGap,
+    sup:superStage(S.info.birth),
+    culOn:!!S.info.culture,
+    cul:S.info.culture ? cultureOf(S.info.birth, S.info.blood) : null
+  };
+  S.res=res; S.done={};
+  paint(res);
+}
+
+function paint(res){
+  var M=res.M, R=res.R, T=res.T;
+  var now=new Date();
+  var ds=now.getFullYear()+'/'+String(now.getMonth()+1).padStart(2,'0')+'/'+String(now.getDate()).padStart(2,'0');
+
+  $('#r-name').textContent=res.nm;
+  var meta=[res.code, '興趣三碼 '+res.top3.join('')];
+  if(S.info.stage) meta.push(S.info.stage);
+  if(res.cul) meta.push(res.cul.zod+' · 屬'+res.cul.sheng+(res.cul.blood? ' · '+res.cul.blood+'型':''));
+  $('#r-meta').textContent=meta.join('　·　');
+  $('#stamp').textContent='ISSUED '+ds;
+  $('#print-meta').textContent='生成日期 '+ds+'　·　'+res.nm+'　·　'+(S.info.stage||'')+'　·　'+res.code+' / '+res.top3.join('')+'　·　生成可能，而非定義未來';
+  $('#foot-ver').textContent='RENDERED '+ds;
+
+  $('#r-mbti').innerHTML=['EI','SN','TF','JP'].map(function(k){
+    var l=letterOf(k,M[k]), st=Math.abs(M[k]);
+    return '<div class="mbti-let"><b>'+l+'</b><span>'+(st<=15?'接近中間':(st>=55?'明確':'中等'))+'</span><i>'+st+'</i></div>';
+  }).join('');
+  $('#r-mbtitle').textContent=res.code+'　'+MBTI_T[res.code][0];
+  $('#r-mbdesc').textContent=MBTI_T[res.code][1];
+
+  $('#r-bars').innerHTML=RIA_KEYS.map(function(k){
+    return '<div class="rb"><span class="rb-k" title="'+RIA_ALIAS_TX[k]+'">'+k+' '+RIA_ALIAS[k]+'</span>'+
+      '<span class="rb-t"><i style="width:'+R[k]+'%"></i></span><span class="rb-v">'+R[k]+'</span></div>'+
+      '<div class="rb"><span class="rb-k" style="opacity:.55">　任務意願</span>'+
+      '<span class="rb-t"><i class="gapmark" style="width:'+T[k]+'%"></i></span><span class="rb-v" style="opacity:.7">'+T[k]+'</span></div>';
+  }).join('');
+
+  /* Super 生涯發展階段 */
+  $('#r-stages').innerHTML=SUPER.map(function(s,i){
+    return '<div class="stg'+(i===res.sup.i?' now':'')+'"><i>'+s.age+'</i><b>'+s.k+
+      (i===res.sup.i?'　← 你在這裡':'')+'</b><span>'+s.tx+'</span></div>';
+  }).join('');
+  $('#r-supernote').innerHTML = res.sup.age!==null
+    ? '你今年 <b>'+res.sup.age+'</b> 歲，正處於<b>'+SUPER[res.sup.i].k+'</b>。'+
+      (res.sup.i<=1
+        ? '這個階段的正確狀態就是「還沒決定」——每一次階段交界都是一個小循環，會再經歷一次探索、試探與承諾。現在說不出答案，不是落後，是剛好準時。'
+        : '每個階段交界都是一個小循環，會再次經歷探索→試探→承諾的過程。生涯是彩虹，不是直線。')
+    : '未填寫出生年月日，此處以「探索期（15–24 歲）」作為預設顯示。填入生日後即可定位你實際所處的階段。';
+
+  /* 聚合效度預警 */
+  var ac, abg, bdg, atx;
+  if(res.maxGap>=35){
+    ac='var(--accent)'; abg='var(--accent-soft)'; bdg='需要提前關注';
+    atx='你的興趣分數與實作意願出現 <b>'+res.maxGap+' 分</b>的落差，屬於高度不一致。這不代表你有問題，而是代表<b>單看測驗結果會誤導決定</b>。建議在選填前，務必安排一次實地的實習課體驗，並與輔導老師談過再做決定。';
+  } else if(res.maxGap>=20){
+    ac='var(--blue)'; abg='var(--blue-soft)'; bdg='建議留意';
+    atx='你的興趣與實作意願之間有 <b>'+res.maxGap+' 分</b>的落差，屬於中度不一致。這是相當常見的狀況，通常代表你對某個領域的認識還停留在「成果」，尚未接觸到「過程」。多做一次職業試探就會清楚很多。';
+  } else {
+    ac='var(--green)'; abg='var(--green-soft)'; bdg='一致性良好';
+    atx='你的興趣與實作意願高度一致（最大落差僅 <b>'+res.maxGap+' 分</b>）。這代表你對自己的判斷相當準確，在做選擇時可以比多數人更相信自己的直覺。';
+  }
+  $('#r-alert').innerHTML='<div class="alertbar" style="--ac:'+ac+';--abg:'+abg+'">'+
+    '<span class="bdg">'+bdg+'</span><p>'+atx+'</p></div>';
+
+  if(res.gaps.length){
+    $('#r-gaps').innerHTML=res.gaps.map(function(x){
+      var over=x.gap>0;
+      return '<div class="gap" style="--gc:'+(over?'var(--accent)':'var(--green)')+'">'+
+        '<h5>'+RIA_NAME[x.k]+' '+x.k+'<em>'+(over?'興趣 > 實作意願 +'+x.gap:'實作意願 > 興趣 +'+Math.abs(x.gap))+'</em></h5>'+
+        '<p>'+(over
+          ? '你對'+RIA_NAME[x.k]+'類內容的興趣是 '+x.r+'%，但真的要動手做「'+RIA_TASK[x.k]+'」時，意願掉到 '+x.t+'%。這通常代表你喜歡的是它的<b>成果</b>，還沒愛上它的<b>過程</b>。技高的相關課程每週都有固定實習時數，選填前請務必先實地體驗一次再決定。'
+          : '你對'+RIA_NAME[x.k]+'類內容的興趣只有 '+x.r+'%，但你其實相當願意做「'+RIA_TASK[x.k]+'」這類任務（'+x.t+'%）。這很可能是你還沒發現的強項——有些能力是先做了，才慢慢喜歡上的。')+'</p></div>';
+    }).join('');
+  } else {
+    $('#r-gaps').innerHTML='<div class="gap-none">六個向度的興趣與實作意願都沒有出現 20 分以上的落差，代表你「想做的」和「願意做的」相當一致。這是相對少見也相對穩定的狀態——你在選擇時，比多數人更能相信自己的直覺。</div>';
+  }
+
+  $('#narr-s').innerHTML=narrStructural(res);
+  $('#narr-n').innerHTML=narrStory(res);
+  $('#narr-c').innerHTML=narrCultural(res);
+  $('#tab-c').hidden = !res.culOn;
+  if(!res.culOn){
+    $$('.tab').forEach(function(x){ x.setAttribute('aria-selected', x.dataset.tab==='s'?'true':'false'); });
+    $$('.tabpanel').forEach(function(p){ p.hidden = (p.dataset.tp!=='s'); });
+  }
+
+  $('#r-match').innerHTML=res.matches.map(function(m,i){
+    return '<div class="mc"><div class="mc-hd">'+
+      '<span class="mc-rank">'+(i+1)+'</span>'+
+      '<span class="t"><b>'+m.g.name+'</b><span>'+m.g.no+' · '+m.g.cat+'</span></span>'+
+      '<span class="mc-fit"><b class="tnum">'+m.score+'</b><span>適配指數</span></span>'+
+      '</div><div class="mc-bd">'+
+      '<div class="mc-tags"><span class="tag" style="color:var(--green);border-color:var(--green)">何倫碼 '+m.g.hol+'</span>'+
+      m.g.types.map(function(t){
+        var on = t===res.code;
+        return '<span class="tag" style="'+(on?'background:var(--blue);color:#fff;border-color:var(--blue);font-weight:600':'color:var(--blue);border-color:var(--blue)')+'">'+t+(on?' ✓':'')+'</span>';
+      }).join('')+'</div>'+
+      '<ul class="mc-why" style="list-style:none;margin:0;padding:0">'+reasonsFor(m,res).map(function(r){ return '<li>'+r+'</li>'; }).join('')+'</ul>'+
+      '<div class="mc-ke"><b>代表科別：</b>'+m.g.dept+'<br><b>代表職業：</b>'+m.g.jobs+'<br><b>現場長這樣：</b>'+m.g.scene+'</div>'+
+      '</div></div>';
+  }).join('');
+
+  var tHtml=res.matches.map(function(m,i){
+    return '<div class="tgrp"><h5><i>Task 0'+(i+1)+'</i>'+m.g.name+'（'+m.g.no+'）</h5><div class="tlist">'+
+      m.g.tasks.map(function(t,j){
+        var id='t'+i+'_'+j;
+        return '<label class="tk"><input type="checkbox" id="'+id+'" data-tk="'+id+'"><span>'+esc(t)+'</span></label>';
+      }).join('')+'</div></div>';
+  }).join('');
+  tHtml+='<div class="tgrp"><h5><i>Task 04</i>共同任務（不分群科）</h5><div class="tlist">'+
+    ['把這張探索單印出來，拿去跟導師或輔導老師談一次，請他幫你補上一個你沒想到的方向。',
+     '找一位在讀技高的學長姐或親戚，問他:「你後悔選這一科嗎?為什麼?」',
+     '參加一次技高的職業試探營或校園開放日，實際走進實習工場站十分鐘。',
+     '三個月後回到這個頁面重測一次，比較兩次結果哪裡不一樣、為什麼不一樣。'
+    ].map(function(t,j){
+      var id='tc_'+j;
+      return '<label class="tk"><input type="checkbox" id="'+id+'" data-tk="'+id+'"><span>'+esc(t)+'</span></label>';
+    }).join('')+'</div></div>';
+  $('#r-tasks').innerHTML=tHtml;
+  updateTaskProg();
+
+  $('#sc-date').textContent=ds;
+  $('#sc-name').textContent=res.nm+' 的職涯可能性';
+  $('#sc-mbti').textContent=res.code;
+  $('#sc-riasec').textContent=res.top3.join('');
+  $('#sc-grp').innerHTML=res.matches.map(function(m,i){
+    return '<div><i>0'+(i+1)+'</i><span>'+m.g.name+'　'+m.score+'</span></div>';
+  }).join('');
+  $('#sc-tl').textContent='生成可能，而非定義未來';
+  $('#share-tx').value=shareText(res);
+
+  $('#result').hidden=false;
+  $('#result').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function reasonsFor(m,res){
+  var g=m.g, R=res.R, T=res.T, M=res.M, out=[];
+  var gTop=topKeys(g.ria,2);
+  var hit=gTop.filter(function(k){ return res.top3.indexOf(k)>-1; });
+  if(hit.length){
+    out.push('你的興趣三碼包含 '+hit.map(function(k){ return '<b>'+k+' '+RIA_NAME[k]+'</b>（你 '+R[k]+'%）'; }).join('、')+
+      '，正是'+g.name+'最核心的傾向（該群 '+gTop[0]+' 標定 '+g.ria[gTop[0]]+'/100）。');
+  } else {
+    out.push('你的興趣三碼（'+res.top3.join('')+'）與'+g.name+'的主碼（'+gTop.join('')+'）不完全重疊，但六個向度的整體<b>分布形狀</b>相近——屬於「值得看看，但不必急著決定」的方向。');
+  }
+  var k0=gTop[0], tv=T[k0];
+  if(tv>=65) out.push('在「'+RIA_TASK[k0]+'」這類真實任務上，你的意願是 <b>'+tv+'%</b>——你不只喜歡它的成果，也願意待在過程裡，這是這一群最需要的特質。');
+  else if(tv>=40) out.push('在「'+RIA_TASK[k0]+'」這類真實任務上，你的意願是 <b>'+tv+'%</b>，屬於中等。建議先參加一次體驗課，再判斷長期投入的意願。');
+  else out.push('要注意：你在「'+RIA_TASK[k0]+'」這類任務的意願只有 <b>'+tv+'%</b>，而這正是這一群每週最大量的日常。強烈建議實地體驗過再考慮。');
+  var axes=['EI','SN','TF','JP'];
+  var bestAx=axes.reduce(function(a,b){ return Math.abs(g.mbti[b])>Math.abs(g.mbti[a])?b:a; });
+  var gl=letterOf(bestAx,g.mbti[bestAx]), ul=letterOf(bestAx,M[bestAx]);
+  if(gl===ul) out.push('認知風格上，這一群偏向<b>'+AXIS_TX[gl][0]+'</b>的工作方式，而你也是：'+AXIS_TX[ul][1]);
+  else out.push('認知風格上，這一群偏向<b>'+AXIS_TX[gl][0]+'</b>，而你偏向<b>'+AXIS_TX[ul][0]+'</b>。這不代表不適合——只是你可能會用不太一樣的方法，完成同樣的事。');
+  if(m.hit) out.push('額外加權：<b>'+res.code+'</b> 正好落在本群科的建議 MBTI 型（'+g.types.join(' / ')+'）之中，適配指數已納入此項。');
+  return out;
+}
+
+function updateTaskProg(){
+  var boxes=$$('#r-tasks input[type=checkbox]');
+  var n=boxes.filter(function(b){ return b.checked; }).length;
+  $('#task-count').textContent='已完成 '+n+' / '+boxes.length;
+  $('#task-bar').style.width=(boxes.length? n/boxes.length*100 : 0)+'%';
+}
+
+function shareText(res){
+  return '我剛用「AI 職涯敘事生成系統」做完職涯探索：\n\n'+
+    '· 認知風格：'+res.code+'（'+MBTI_T[res.code][0]+'）\n'+
+    '· 興趣三碼：'+res.top3.join('')+'（'+res.top3.map(function(k){ return RIA_NAME[k]; }).join(' / ')+'）\n'+
+    '· 最適配群科：'+res.matches.map(function(m){ return m.g.name+' '+m.score; }).join('、')+'\n\n'+
+    '「生成可能，而非定義未來。」\n'+
+    'AI 只是翻譯引擎，故事還是要自己去走一遍。\n'+
+    '#職涯探索 #技術型高中 #群科探索 #MBTI #RIASEC';
+}
+
+function summaryText(res){
+  var L=[];
+  L.push('AI 職涯敘事生成系統 · 個人探索摘要');
+  L.push('================================================');
+  L.push('姓名／暱稱：'+res.nm+'　階段：'+(S.info.stage||'未填'));
+  if(res.cul) L.push('文化象徵：'+res.cul.zod+' · 屬'+res.cul.sheng+(res.cul.blood? ' · '+res.cul.blood+'型':'')+'（僅供敘事，不參與計算）');
+  L.push('');
+  L.push('【一、認知風格 MBTI】'+res.code+'　'+MBTI_T[res.code][0]);
+  ['EI','SN','TF','JP'].forEach(function(k){
+    L.push('  '+letterOf(k,res.M[k])+'　'+AXIS_TX[letterOf(k,res.M[k])][0]+'　強度 '+Math.abs(res.M[k])+'/100');
+  });
+  L.push('  '+MBTI_T[res.code][1]);
+  L.push('');
+  L.push('【二、RIASEC 興趣權重 vs 真實任務意願】');
+  RIA_KEYS.forEach(function(k){
+    L.push('  '+k+' '+RIA_NAME[k]+'【'+RIA_ALIAS[k]+'】　興趣 '+String(res.R[k]).padStart(3)+'%　任務意願 '+String(res.T[k]).padStart(3)+'%');
+  });
+  L.push('  興趣三碼：'+res.top3.join(''));
+  L.push('');
+  L.push('【三、生涯階段定位（Super 生涯發展理論）】');
+  L.push('  '+(res.sup.age!==null? res.sup.age+' 歲 · '+SUPER[res.sup.i].k+'（'+SUPER[res.sup.i].age+'）' : '未填出生年月日，預設為探索期'));
+  L.push('  '+SUPER[res.sup.i].tx);
+  L.push('');
+  L.push('【四、聚合效度檢核：興趣與實作偏好的差異】');
+  L.push('  最大落差 '+res.maxGap+' 分 → '+(res.maxGap>=35?'需要提前關注':(res.maxGap>=20?'建議留意':'一致性良好')));
+  if(res.gaps.length){
+    res.gaps.forEach(function(x){
+      L.push('  · '+RIA_NAME[x.k]+'（'+x.k+'）：興趣 '+x.r+'% / 意願 '+x.t+'% → '+(x.gap>0? '興趣高於實作意願 '+x.gap+' 分，建議先體驗再決定。' : '實作意願高於興趣 '+Math.abs(x.gap)+' 分，可能是未被發現的強項。'));
+    });
+  } else { L.push('  · 六個向度皆無 20 分以上落差，興趣與實作意願一致。'); }
+  L.push('');
+  L.push('【五、15 群科前三名配對】');
+  res.matches.forEach(function(m,i){
+    L.push('  '+(i+1)+'. '+m.g.name+'（'+m.g.no+' · '+m.g.cat+'）　適配指數 '+m.score);
+    L.push('     代表科別：'+m.g.dept);
+    reasonsFor(m,res).forEach(function(r){ L.push('     - '+r.replace(/<[^>]+>/g,'')); });
+  });
+  L.push('');
+  L.push('【六、結構型敘事】');
+  L.push('  '+$('#narr-s').textContent.trim().replace(/\s+/g,' '));
+  L.push('');
+  L.push('【七、故事型敘事】');
+  L.push('  '+$('#narr-n').textContent.trim().replace(/\s+/g,' '));
+  L.push('');
+  L.push('【八、文化型敘事】');
+  L.push('  '+$('#narr-c').textContent.trim().replace(/\s+/g,' '));
+  L.push('');
+  L.push('【九、探索任務清單】');
+  $$('#r-tasks .tgrp').forEach(function(grp){
+    L.push('  '+$('h5',grp).textContent.replace(/Task 0\d/,'').trim());
+    $$('.tk',grp).forEach(function(tk){
+      L.push('    ['+($('input',tk).checked?'V':' ')+'] '+$('span',tk).textContent);
+    });
+  });
+  L.push('');
+  L.push('------------------------------------------------');
+  L.push('本結果為教學用職業試探工具所生成，非心理衡鑑、非落點分析、非命理預測。');
+  L.push('所有運算於瀏覽器內完成，未上傳任何資料。生成可能，而非定義未來。');
+  return L.join('\n');
+}
+
+/* =============== 15 群科地圖 =============== */
+var CATS=['工業類','商業類','農業類','家事類','海事水產類','藝術類'];
+function renderMap(filter){
+  var list = filter? GROUPS.filter(function(g){ return g.cat===filter; }) : GROUPS;
+  $('#gmap').innerHTML=list.map(function(g){
+    var order=RIA_KEYS.slice().sort(function(a,b){ return g.ria[b]-g.ria[a]; });
+    var code=RIA_KEYS.map(function(k){
+      var rank=order.indexOf(k);
+      return '<span class="'+(rank<2?'hi':(rank===2?'hi2':''))+'" title="'+RIA_FULL[k]+' '+g.ria[k]+'">'+k+'</span>';
+    }).join('');
+    return '<article class="gcard"><div class="gcard-hd"><span class="no">'+g.no+'</span>'+
+      '<span class="code6">'+code+'</span><span class="cat">'+g.cat+'</span></div>'+
+      '<div class="gcard-bd"><h4>'+g.name+'</h4>'+
+      '<div class="mc-tags"><span class="tag" style="color:var(--green);border-color:var(--green)">何倫碼 '+g.hol+'</span>'+
+      g.types.map(function(t){ return '<span class="tag" style="color:var(--blue);border-color:var(--blue)">'+t+'</span>'; }).join('')+'</div>'+
+      '<p class="ds">'+g.desc+'</p>'+
+      '<p class="ds" style="color:var(--ink-faint);font-size:12.5px;border-left:2px solid var(--rule);padding-left:11px">'+g.story+'</p>'+
+      '<div class="mc-tags">'+g.tags.map(function(t){ return '<span class="tag">'+t+'</span>'; }).join('')+'</div>'+
+      '<p class="sk"><b>代表科別：</b>'+g.dept+'<br><b>代表職業：</b>'+g.jobs+'</p></div></article>';
+  }).join('');
+}
+function renderFilters(){
+  var f=[['全部 15 群','']].concat(CATS.map(function(c){
+    return [c+' '+GROUPS.filter(function(g){ return g.cat===c; }).length, c];
+  }));
+  $('#gfilters').innerHTML=f.map(function(x,i){
+    return '<button type="button" class="chip" data-cat="'+x[1]+'" aria-pressed="'+(i===0?'true':'false')+'">'+x[0]+'</button>';
+  }).join('');
+  $('#gfilters').addEventListener('click', function(e){
+    var b=e.target.closest('.chip'); if(!b) return;
+    $$('#gfilters .chip').forEach(function(x){ x.setAttribute('aria-pressed', x===b?'true':'false'); });
+    renderMap(b.dataset.cat);
+  });
+}
+
+/* =============== 複製 =============== */
+function copyFallback(txt, ok){
+  var ta=document.createElement('textarea');
+  ta.value=txt; ta.style.position='fixed'; ta.style.top='-1000px';
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  try{ document.execCommand('copy'); toast(ok); }
+  catch(e){ toast('複製失敗，請手動選取文字後複製'); }
+  document.body.removeChild(ta);
+}
+function copyText(txt, ok){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(function(){ toast(ok); }, function(){ copyFallback(txt, ok); });
+  } else copyFallback(txt, ok);
+}
+
+/* =============== 示範作答 =============== */
+function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+function syncAnswers(){
+  [['#mbti-q','mbti'],['#riasec-q','ria'],['#task-q','task']].forEach(function(p){
+    $$(p[0]+' .q').forEach(function(row){
+      var i=+row.dataset.i, v=S[p[1]][i];
+      $$('button[data-v]',row).forEach(function(b){
+        b.setAttribute('aria-pressed', (+b.dataset.v===v)?'true':'false');
+      });
+    });
+  });
+}
+function fillDemo(){
+  var dirs={}; ['EI','SN','TF','JP'].forEach(function(k){ dirs[k]=Math.random()<0.5?-1:1; });
+  MBTI_Q.forEach(function(q,i){
+    S.mbti[i]=clamp(Math.round(3 + q.r*dirs[q.d]*1.45 + (Math.random()*1.6-0.8)),1,5);
+  });
+  var tg={}; RIA_KEYS.forEach(function(k){ tg[k]=1.6+Math.random()*3.3; });
+  RIASEC_Q.forEach(function(q,i){ S.ria[i]=clamp(Math.round(tg[q.k]+(Math.random()*1.4-0.7)),1,5); });
+  TASK_Q.forEach(function(q,i){ S.task[i]=clamp(Math.round(tg[q.k]-0.55+(Math.random()*2.2-1.1)),1,5); });
+  if(!$('#f-name').value){ $('#f-name').value='示範同學'; S.info.name='示範同學'; }
+  if(!$('#f-birth').value){ $('#f-birth').value='2011-05-14'; S.info.birth='2011-05-14'; }
+  if(!$('#f-blood').value){ $('#f-blood').value='O'; S.info.blood='O'; }
+  syncAnswers(); peekCulture(); renderReady(); updateProgress();
+  toast('已載入一組示範作答');
+}
+
+/* =============== 重設 =============== */
+function resetAll(){
+  S.info={name:'', birth:'', sex:'', blood:'', stage:'國中九年級', culture:true};
+  S.mbti=new Array(32).fill(0); S.ria=new Array(36).fill(0); S.task=new Array(12).fill(0);
+  S.res=null; S.done={};
+  $('#f-name').value=''; $('#f-birth').value=''; $('#f-sex').value=''; $('#f-blood').value='';
+  $('#f-stage').value='國中九年級';
+  $('#culture-sw').setAttribute('aria-pressed','true');
+  $('#tab-c').hidden=false;
+  syncAnswers(); peekCulture();
+  $('#result').hidden=true;
+  $('#r-tasks').innerHTML=''; $('#share-tx').value='';
+  goStep(0);
+  toast('已清除所有資料，可以重新測驗');
+}
+
+/* =============== 星座生肖即時預覽 =============== */
+function peekCulture(){
+  var box=$('#cultural-peek');
+  var sup=superStage(S.info.birth);
+  var c=S.info.culture ? cultureOf(S.info.birth, S.info.blood) : null;
+  var bits=[];
+  if(sup.age!==null){
+    bits.push('<b>生涯階段（Super）：</b>'+sup.age+' 歲 · '+SUPER[sup.i].k+'（'+SUPER[sup.i].age+'）');
+  }
+  if(c){
+    bits.push('<b>文化象徵：</b>'+c.zod+' · '+c.y+' 年（屬'+c.sheng+'）'+(c.blood? ' · '+c.blood+' 型':'')+
+      '　—— 只出現在 C 版敘事，不參與群科配對計算。');
+  }
+  if(!bits.length){ box.hidden=true; box.innerHTML=''; return; }
+  box.hidden=false;
+  box.innerHTML='<b>已在你的瀏覽器內推算：</b><br>'+bits.join('<br>');
+}
+
+/* =============== 綁定 =============== */
+function bind(){
+  buildQuestions($('#mbti-q'), MBTI_Q, 'mbti');
+  buildQuestions($('#riasec-q'), RIASEC_Q, 'ria');
+  buildQuestions($('#task-q'), TASK_Q, 'task');
+  $('#ria-legend').innerHTML=RIA_KEYS.map(function(k){
+    return '<li><i>'+k+' '+RIA_NAME[k]+'</i><b>'+RIA_ALIAS[k]+'</b><span>'+RIA_ALIAS_TX[k]+'</span></li>';
+  }).join('');
+  renderFilters(); renderMap('');
+
+  $('#f-name').addEventListener('input', function(){ S.info.name=this.value.trim().slice(0,20); });
+  $('#f-birth').addEventListener('change', function(){ S.info.birth=this.value; peekCulture(); });
+  $('#f-sex').addEventListener('change', function(){ S.info.sex=this.value; });
+  $('#f-blood').addEventListener('change', function(){ S.info.blood=this.value; peekCulture(); });
+  $('#f-stage').addEventListener('change', function(){ S.info.stage=this.value; });
+  $('#culture-sw').addEventListener('click', function(){
+    S.info.culture = this.getAttribute('aria-pressed')!=='true';
+    this.setAttribute('aria-pressed', S.info.culture?'true':'false');
+    peekCulture(); renderReady();
+    toast(S.info.culture?'文化趣味模式：已開啟':'文化趣味模式：已關閉');
+  });
+
+  $$('.step').forEach(function(b){ b.addEventListener('click', function(){ goStep(+b.dataset.step); }); });
+  $('#prev').addEventListener('click', function(){ goStep(S.step-1); });
+  $('#next').addEventListener('click', function(){ goStep(S.step+1); });
+  $('#gen').addEventListener('click', generate);
+  $('#fill-demo').addEventListener('click', fillDemo);
+
+  $$('.tab').forEach(function(t){
+    t.addEventListener('click', function(){
+      $$('.tab').forEach(function(x){ x.setAttribute('aria-selected', x===t?'true':'false'); });
+      $$('.tabpanel').forEach(function(p){ p.hidden = (p.dataset.tp !== t.dataset.tab); });
+    });
+  });
+
+  $('#r-tasks').addEventListener('change', function(e){
+    if(e.target.type!=='checkbox') return;
+    e.target.closest('.tk').classList.toggle('on', e.target.checked);
+    S.done[e.target.dataset.tk]=e.target.checked;
+    updateTaskProg();
+  });
+
+  $('#do-print').addEventListener('click', function(){ window.print(); });
+  $('#do-copy').addEventListener('click', function(){
+    if(!S.res){ toast('請先生成結果'); return; }
+    copyText(summaryText(S.res), '完整摘要已複製到剪貼簿');
+  });
+  $('#copy-share').addEventListener('click', function(){
+    if(!S.res){ toast('請先生成結果'); return; }
+    copyText($('#share-tx').value, '分享文字已複製');
+  });
+  $('#do-reset').addEventListener('click', resetAll);
+
+  $('#themetog').addEventListener('click', function(){
+    var root=document.documentElement, cur=root.getAttribute('data-theme');
+    var dark = cur ? cur==='dark' : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    root.setAttribute('data-theme', dark?'light':'dark');
+    toast(dark?'已切換為淺色 · 製圖紙':'已切換為深色 · 藍圖');
+  });
+
+  goStep(0);
+}
+
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', bind);
+else bind();
+
+})();
+</script>
+</body>
+</html>

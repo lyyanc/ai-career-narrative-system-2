@@ -1,0 +1,20 @@
+# 相依套件
+node_modules/
+
+# Vercel
+.vercel
+
+# 作業系統
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 編輯器
+.vscode/
+.idea/
+*.swp
+
+# 暫存
+*.log
+_p*.txt
+_head.txt

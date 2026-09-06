@@ -47,11 +47,28 @@
 單一靜態 HTML 檔，無建置步驟、無框架、無相依套件。全部邏輯內嵌於 `index.html`。
 
 ```
-site/
-├── index.html      # 完整網站（HTML + CSS + JS）
-├── vercel.json     # Vercel 靜態託管設定與安全標頭
+.
+├── index.html          # 完整網站（HTML + CSS + JS）
+├── og-image.png        # 1200×630 社群分享圖
+├── vercel.json         # Vercel 靜態託管設定與安全標頭
+├── tools/
+│   └── make-og.ps1     # 重新產生 og-image.png
 └── README.md
 ```
+
+### 重新產生社群分享圖
+
+`og-image.png` 由指令稿產生，不需要繪圖軟體。改完文案後執行：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools\make-og.ps1
+```
+
+需求：Windows PowerShell（System.Drawing）、已安裝 Noto Serif TC 與 Noto Sans TC。
+指令稿本身必須維持 **UTF-8 with BOM** 編碼，否則 PowerShell 5.1 會以 ANSI 讀取而使中文毀損。
+
+> 換綁自訂網域時，記得同步更新 `index.html` 裡 `og:url`、`og:image`、`twitter:image`
+> 與 `canonical` 的絕對網址 —— Open Graph 不接受相對路徑。
 
 ### 本機預覽
 

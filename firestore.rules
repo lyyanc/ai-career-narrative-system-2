@@ -1,0 +1,82 @@
+rules_version = '2';
+
+// AI 職涯敘事生成系統 — Firestore 安全規則
+//
+// 設計原則：只寫不讀（write-only）
+//   學生端只能「新增」一筆自己的作答，不能讀取、修改或刪除任何資料。
+//   老師從 Firebase Console 或 Admin SDK 讀取與匯出。
+//   即使有人拿到網站原始碼與 apiKey，也讀不到任何一筆學生資料。
+//
+// 貼上位置：Firebase Console → Firestore Database → 規則(Rules) → 發布
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /submissions/{docId} {
+
+      // ---------- 讀取：一律禁止 ----------
+      // 學生端不需要讀，關掉可完全杜絕資料外洩。
+      allow read: if false;
+
+      // ---------- 修改／刪除：一律禁止 ----------
+      // 作答送出後即為輔導紀錄，不允許前端竄改或抹除。
+      allow update, delete: if false;
+
+      // ---------- 新增：需通過全部檢查 ----------
+      allow create: if isSignedIn()
+                    && isOwnDocument()
+                    && hasConsent()
+                    && hasExpectedShape()
+                    && withinSizeLimits();
+    }
+
+    // 未明確列出的路徑一律拒絕
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+
+  // ===== 條件函式 =====
+
+  // 必須先完成匿名驗證（Anonymous Auth）
+  function isSignedIn() {
+    return request.auth != null;
+  }
+
+  // 文件裡記錄的 uid 必須等於實際發出請求的 uid，
+  // 防止偽造他人身分寫入。
+  function isOwnDocument() {
+    return request.resource.data.meta.uid == request.auth.uid;
+  }
+
+  // 同意條款在伺服器端再驗一次。
+  // 前端的勾選框可以被繞過，這一行不行。
+  function hasConsent() {
+    return request.resource.data.consent.agreed == true
+        && request.resource.data.consent.version is string;
+  }
+
+  // 只允許預期的頂層欄位，擋掉夾帶任意資料的寫入。
+  function hasExpectedShape() {
+    return request.resource.data.keys().hasOnly([
+             'consent', 'classCode', 'profile', 'cultureMode',
+             'answers', 'result', 'meta'
+           ])
+        && request.resource.data.classCode is string
+        && request.resource.data.profile.name is string
+        && request.resource.data.answers.mbti is list
+        && request.resource.data.answers.ria is list
+        && request.resource.data.answers.task is list
+        && request.resource.data.result.mbtiCode is string;
+  }
+
+  // 長度上限，避免有人灌入大量垃圾資料把配額吃光。
+  function withinSizeLimits() {
+    return request.resource.data.classCode.size() <= 20
+        && request.resource.data.profile.name.size() <= 40
+        && request.resource.data.answers.mbti.size() == 32
+        && request.resource.data.answers.ria.size() == 36
+        && request.resource.data.answers.task.size() == 12
+        && request.resource.data.result.mbtiCode.size() == 4;
+  }
+}

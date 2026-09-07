@@ -15,7 +15,7 @@
 <meta property="og:site_name" content="職涯敘事製圖所">
 <meta property="og:url" content="https://ai-career-narrative-system-2.vercel.app/">
 <meta property="og:title" content="生成可能，而非定義未來｜AI 職涯敘事生成系統">
-<meta property="og:description" content="MBTI × RIASEC × 真實任務偏好，生成三種版本的自我敘事，對接技高 6 類 15 群 94 專業類科。不登入、不上傳、不儲存。">
+<meta property="og:description" content="MBTI × RIASEC × 真實任務偏好，生成三種版本的自我敘事，對接技高 6 類 15 群 94 專業類科。不需登入，是否保存由你決定。">
 <meta property="og:image" content="https://ai-career-narrative-system-2.vercel.app/og-image.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
@@ -498,6 +498,33 @@ input,select,textarea{font:inherit; color:inherit}
 .switchtx b em{font-style:normal; font-family:var(--f-mono); font-size:10px; letter-spacing:.12em; color:var(--violet); margin-left:8px}
 .switchtx p{font-size:12.8px; color:var(--ink-soft); line-height:1.75}
 
+/* ============ CONSENT GATE ============ */
+.consent{border:1.5px solid var(--rule-strong); background:var(--sheet-2); margin-top:24px}
+.consent.on{border-color:var(--green); background:var(--green-soft)}
+.consent-hd{display:flex; align-items:flex-start; gap:13px; padding:16px 18px; cursor:pointer}
+.consent-hd input{width:20px; height:20px; flex-shrink:0; margin-top:2px; accent-color:var(--green); cursor:pointer}
+.consent-hd .ctx b{display:block; font-size:14.5px; margin-bottom:4px}
+.consent-hd .ctx p{font-size:12.8px; color:var(--ink-soft); line-height:1.75}
+.consent-more{border-top:1px dashed var(--rule); padding:0 18px}
+.consent-more summary{font-family:var(--f-mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); padding:11px 0; cursor:pointer; list-style:none}
+.consent-more summary::-webkit-details-marker{display:none}
+.consent-more summary::before{content:"▸ "; color:var(--accent)}
+.consent-more[open] summary::before{content:"▾ "}
+.consent-more ol{margin:0 0 16px; padding-left:20px}
+.consent-more li{font-size:12.7px; color:var(--ink-soft); line-height:1.8; margin-bottom:9px}
+.consent-more li b{color:var(--ink)}
+
+/* ============ SAVE STATUS ============ */
+.savebar{display:flex; align-items:center; gap:13px; padding:14px 17px; border:1.5px solid var(--sc); background:var(--sbg); flex-wrap:wrap}
+.savebar .dot{width:9px; height:9px; border-radius:50%; background:var(--sc); flex-shrink:0}
+.savebar .stx{flex:1 1 240px; font-size:13.3px; color:var(--ink-soft); line-height:1.7}
+.savebar .stx b{color:var(--ink)}
+.savebar code{font-family:var(--f-mono); font-size:12px; background:var(--sheet-3); border:1px solid var(--rule); padding:2px 7px; user-select:all}
+.savebar button{font-family:var(--f-mono); font-size:11.5px; letter-spacing:.06em; padding:7px 14px; border:1px solid var(--rule-strong); background:var(--sheet); color:var(--ink); cursor:pointer}
+.savebar button:hover{border-color:var(--accent); color:var(--accent)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.savebar.busy .dot{animation:pulse 1.1s ease-in-out infinite}
+
 /* ============ SUPER STAGE ============ */
 .stages{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:0; border:1px solid var(--rule); margin-top:4px}
 .stg{padding:13px 15px; border-right:1px solid var(--rule); background:var(--sheet-2)}
@@ -620,7 +647,7 @@ input,select,textarea{font:inherit; color:inherit}
         <div><b class="tnum">32</b><span>MBTI 題項</span></div>
         <div><b class="tnum">36</b><span>RIASEC 題項</span></div>
         <div><b class="tnum">12</b><span>真實任務題項</span></div>
-        <div><b class="tnum">0</b><span>資料上傳筆數</span></div>
+        <div><b class="tnum">3</b><span>敘事版本</span></div>
       </div>
     </div>
 
@@ -776,8 +803,9 @@ input,select,textarea{font:inherit; color:inherit}
         <!-- STEP 0 -->
         <div class="panel" data-panel="0">
           <h3 class="wb-h">先讓系統知道怎麼稱呼你</h3>
-          <p class="wb-sub">姓名只用來寫進你的敘事與探索單；出生年月日只用來推算星座與生肖（文化型敘事用）；
-            性別與血型只作為敘事的語氣參考。以上欄位都可以留白或填暱稱，不影響群科配對結果。</p>
+          <p class="wb-sub">姓名會寫進你的敘事與探索單；出生年月日用來定位生涯階段並推算星座與生肖；
+            性別與血型只作為敘事的語氣參考。以上欄位都可以留白或填暱稱，<b>不影響群科配對結果</b>。
+            這一頁最下方有一個同意欄位，決定你的作答要不要留存到學校資料庫——請先看過再決定。</p>
           <div class="fgrid">
             <div class="fld">
               <label for="f-name">姓名 / 暱稱</label>
@@ -787,7 +815,7 @@ input,select,textarea{font:inherit; color:inherit}
             <div class="fld">
               <label for="f-birth">出生年月日</label>
               <input id="f-birth" type="date" min="1990-01-01" max="2020-12-31">
-              <small>僅在瀏覽器內推算星座與生肖，不會離開這個頁面。</small>
+              <small>用來定位 Super 生涯階段，並推算星座與生肖。</small>
             </div>
             <div class="fld">
               <label for="f-sex">性別</label>
@@ -805,6 +833,11 @@ input,select,textarea{font:inherit; color:inherit}
                 <option>A</option><option>B</option><option>O</option><option>AB</option>
               </select>
               <small>僅用於文化型敘事的比喻語彙。</small>
+            </div>
+            <div class="fld">
+              <label for="f-class">班級代碼</label>
+              <input id="f-class" type="text" maxlength="20" placeholder="例：901 或 九年三班" autocomplete="off">
+              <small>老師分組彙整用。若不儲存資料，此欄可留白。</small>
             </div>
             <div class="fld">
               <label for="f-stage">目前階段</label>
@@ -828,12 +861,39 @@ input,select,textarea{font:inherit; color:inherit}
             </div>
           </div>
           <div id="cultural-peek" class="privacy" hidden></div>
-          <p class="privacy">
-            <b>個資最小化設計：</b>這個頁面沒有登入、沒有資料庫，也沒有任何會傳出你作答內容的連線
-            （頁面只在載入時向字型服務取得字型檔，不含任何個人資料）。
-            你輸入的一切只存在於目前這個瀏覽器分頁的記憶體中，<b>關閉或重新整理即完全消失</b>，
-            系統也不會寫入 Cookie 或本機儲存空間。要留存結果，請使用下方的「列印探索單」或「複製摘要」。
-          </p>
+
+          <div class="consent" id="consent-box">
+            <label class="consent-hd" for="f-consent">
+              <input type="checkbox" id="f-consent">
+              <div class="ctx">
+                <b>我同意將本次作答結果，提供學校作為生涯輔導之用</b>
+                <p>勾選後，你的基本資料、原始作答與計算結果會<b>上傳並保存到學校的輔導資料庫</b>。
+                  <b>不勾選也可以完成全部測驗</b>，系統一樣會生成敘事與群科配對，只是不會留下任何紀錄——
+                  這種情況下請用「列印探索單」或「複製摘要」自行留存。</p>
+              </div>
+            </label>
+            <details class="consent-more">
+              <summary>個人資料蒐集告知事項（個人資料保護法第 8 條）</summary>
+              <ol>
+                <li><b>蒐集機關：</b>新北市立鶯歌工商。</li>
+                <li><b>蒐集目的：</b>學生生涯輔導、職業試探與技高群科選擇之諮詢；以及去識別化後的教學研究與成效分析。</li>
+                <li><b>個人資料類別：</b>姓名、出生年月日、性別、血型、就讀階段、班級代碼，以及 MBTI、RIASEC
+                  與真實任務偏好三份量表的原始作答與計算結果。</li>
+                <li><b>利用期間：</b>自蒐集之日起，至你畢業後兩年止，屆期由學校刪除。</li>
+                <li><b>利用地區：</b>資料儲存於 Google Firebase 位在<b>台灣（asia-east1）</b>的資料中心。</li>
+                <li><b>利用對象與方式：</b>僅限本校輔導處與授課教師，以電子檔方式閱覽與統計。
+                  <b>不會提供給校外第三方，也不會用於商業目的。</b></li>
+                <li><b>你的權利：</b>你可以隨時向輔導處查詢、閱覽、請求補充或更正、請求停止蒐集處理利用，
+                  或請求刪除你的資料，不需要說明理由。</li>
+                <li><b>不提供的影響：</b>你可以自由選擇不勾選。不勾選<b>不會影響你使用本系統的任何功能</b>，
+                  也不會影響你的成績、選填志願或任何權益。</li>
+                <li><b>未成年學生請注意：</b>若你未滿 18 歲，請在勾選前<b>先讓家長或監護人知悉</b>。
+                  學校另有紙本同意書，以紙本同意書為準。</li>
+              </ol>
+            </details>
+          </div>
+
+          <p class="privacy" id="privacy-note"></p>
         </div>
 
         <!-- STEP 1 -->
@@ -1002,9 +1062,16 @@ input,select,textarea{font:inherit; color:inherit}
         </div>
       </div>
 
+      <div class="rs-sec">
+        <div class="rs-h"><i>Note G</i>資料保存狀態</div>
+        <p class="rs-lead">這一段如實記錄你的作答有沒有被送出、送到哪裡。無論是否儲存，
+          上面的敘事與配對都是在你的瀏覽器內算出來的，沒有經過任何伺服器。</p>
+        <div id="r-save"></div>
+      </div>
+
       <div class="rs-sec noprint">
-        <div class="rs-h"><i>Note G</i>帶走你的結果</div>
-        <p class="rs-lead">這個頁面不會替你保存任何東西。離開之前，請先複製或列印。</p>
+        <div class="rs-h"><i>Note H</i>帶走你的結果</div>
+        <p class="rs-lead">列印或複製一份自己留著，比只存在資料庫裡可靠。</p>
         <div class="actions">
           <button class="btn btn-pri" id="do-print" type="button">列印探索單（含簽章欄）</button>
           <button class="btn" id="do-copy" type="button">複製完整摘要</button>
@@ -1131,7 +1198,7 @@ input,select,textarea{font:inherit; color:inherit}
         <p>MBTI 四碼會隨年齡、環境與經驗變動，興趣更是如此。今天的結果只描述「現在的你」，
           三年後重測很可能不一樣——那不是測錯了，那是你長大了。</p></div>
       <div class="fq"><h4><i>資料</i>零上傳、零儲存</h4>
-        <p>整套運算都在你的瀏覽器內完成。沒有帳號、沒有後端 API、沒有分析追蹤，也不寫入 Cookie 或 localStorage；唯一的外部請求是網頁字型檔，不含任何個人資料。
+        <p><b>計分與敘事生成全部在你的瀏覽器內完成</b>，沒有帳號、沒有分析追蹤，也不寫入 Cookie 或 localStorage。資料是否離開這台裝置，<b>由你在步驟一的同意欄位決定</b>：不勾選就完全不上傳；勾選才會把作答寫入學校輔導資料庫（Google Firestore，機房位於台灣 asia-east1）。資料庫規則設定為<b>只能新增、不能讀取或修改</b>，網頁端無法查詢任何人的紀錄。
           關閉分頁的那一刻，所有輸入即不可回復地消失。</p></div>
       <div class="fq"><h4><i>教學</i>給老師的使用建議</h4>
         <p>建議搭配一節課的時間：前 20 分鐘作答、10 分鐘閱讀三版本敘事、15 分鐘小組互相說明自己的三群配對，
@@ -1165,7 +1232,7 @@ input,select,textarea{font:inherit; color:inherit}
       </div>
       <div>
         <h5>資料處理</h5>
-        <p>無登入 · 無後端 · 無 Cookie · 無追蹤。<br>所有計算於瀏覽器記憶體內完成，離開頁面即銷毀。</p>
+        <p>無登入 · 無 Cookie · 無追蹤。<br>計分與敘事於瀏覽器記憶體內完成。<br>是否保存至學校輔導資料庫，由學生自行同意；未同意則不上傳。</p>
       </div>
     </div>
     <div class="foot-bar">
@@ -1181,8 +1248,8 @@ input,select,textarea{font:inherit; color:inherit}
 
 <script>
 /* =========================================================
-   AI 職涯敘事生成系統 · 全部運算於瀏覽器記憶體內完成
-   無後端 / 無 Cookie / 無 localStorage / 作答內容不外傳（僅字型檔為外部資源）
+   AI 職涯敘事生成系統 · 計分與敘事於瀏覽器內完成
+   無登入 / 無 Cookie / 無 localStorage · 是否保存至學校輔導資料庫由學生自行同意
    ========================================================= */
 (function(){
 'use strict';
@@ -1583,7 +1650,8 @@ var BLOOD_TX = {
 /* =============== STATE（僅存在於記憶體） =============== */
 var S = {
   step:0,
-  info:{name:'', birth:'', sex:'', blood:'', stage:'國中九年級', culture:true},
+  info:{name:'', birth:'', sex:'', blood:'', stage:'國中九年級', cls:'', culture:true, consent:false},
+  save:{state:'idle', id:'', err:''},
   mbti:new Array(32).fill(0),
   ria:new Array(36).fill(0),
   task:new Array(12).fill(0),
@@ -1673,7 +1741,11 @@ function renderReady(){
     ['生涯階段（Super）', S.info.birth? superStage(S.info.birth).age+' 歲 · '+SUPER[superStage(S.info.birth).i].k : '未填出生年月日，將以「探索期」預設顯示', S.info.birth?'var(--green)':'var(--rule-strong)'],
     ['文化趣味模式', !S.info.culture ? '已關閉，將不生成 C 版文化型敘事'
         : (S.info.birth? '已開啟 · 星座與生肖已推算'+(S.info.blood?'、血型已填寫':'（血型未填）') : '已開啟，但未填出生年月日，將略過文化象徵段落'),
-      S.info.culture? 'var(--violet)':'var(--rule-strong)']
+      S.info.culture? 'var(--violet)':'var(--rule-strong)'],
+    ['資料保存', S.info.consent
+        ? '已同意保存'+(S.info.cls? '　·　班級代碼 '+esc(S.info.cls) : '（班級代碼未填）')
+        : '未同意，本次作答不會上傳、不留紀錄',
+      S.info.consent? 'var(--green)':'var(--rule-strong)']
   ];
   $('#ready').innerHTML = rows.map(function(r){
     return '<div class="gap" style="--gc:'+r[2]+'"><h5>'+r[0]+'</h5><p>'+r[1]+'</p></div>';
@@ -1858,7 +1930,7 @@ function narrCultural(res){
     h+='<p class="lead">'+esc(nm)+'，你沒有填寫出生年月日，所以這一段沒有星座與生肖可以說。</p>';
     h+='<p>其實這樣也好。文化型敘事的設計初衷，本來就不是為了增加準確度，而是為了降低開口的門檻——'+
         '讓還不習慣談論自己的人，有一個熟悉的入口。你既然已經走完了前面 80 題，就代表你不太需要那個入口了。</p>';
-    h+='<p>如果你想補上這一段，回到步驟一填入出生年月日即可（系統只會在你的瀏覽器裡推算星座與生肖，不會傳出去）。'+
+    h+='<p>如果你想補上這一段，回到步驟一填入出生年月日即可（星座與生肖在你的瀏覽器裡推算）。'+
         '或者，你也可以直接用系統的語言描述自己：<strong>'+res.code+' × '+res.top3.join('')+'</strong>——'+
         '這串代碼比任何星座都更貼近你剛才的作答。</p>';
   }
@@ -1895,7 +1967,9 @@ function generate(){
     cul:S.info.culture ? cultureOf(S.info.birth, S.info.blood) : null
   };
   S.res=res; S.done={};
+  S.save={state:'idle', id:'', err:''};
   paint(res);
+  trySave(res);
 }
 
 function paint(res){
@@ -2204,21 +2278,117 @@ function fillDemo(){
 
 /* =============== 重設 =============== */
 function resetAll(){
-  S.info={name:'', birth:'', sex:'', blood:'', stage:'國中九年級', culture:true};
+  S.info={name:'', birth:'', sex:'', blood:'', stage:'國中九年級', cls:'', culture:true, consent:false};
+  S.save={state:'idle', id:'', err:''};
   S.mbti=new Array(32).fill(0); S.ria=new Array(36).fill(0); S.task=new Array(12).fill(0);
   S.res=null; S.done={};
   $('#f-name').value=''; $('#f-birth').value=''; $('#f-sex').value=''; $('#f-blood').value='';
-  $('#f-stage').value='國中九年級';
+  $('#f-stage').value='國中九年級'; $('#f-class').value='';
+  $('#f-consent').checked=false; $('#consent-box').classList.remove('on');
   $('#culture-sw').setAttribute('aria-pressed','true');
   $('#tab-c').hidden=false;
-  syncAnswers(); peekCulture();
+  syncAnswers(); peekCulture(); renderPrivacyNote();
   $('#result').hidden=true;
-  $('#r-tasks').innerHTML=''; $('#share-tx').value='';
+  $('#r-tasks').innerHTML=''; $('#share-tx').value=''; $('#r-save').innerHTML='';
   goStep(0);
   toast('已清除所有資料，可以重新測驗');
 }
 
 /* =============== 星座生肖即時預覽 =============== */
+/* =============== 隱私狀態說明（隨同意勾選改變） =============== */
+function renderPrivacyNote(){
+  var el=$('#privacy-note'); if(!el) return;
+  if(S.info.consent){
+    el.innerHTML='<b>目前設定：會保存。</b>送出後，你的基本資料、原始作答與計算結果會寫入學校的輔導資料庫'+
+      '（Google Firestore，機房位於台灣）。連線採 HTTPS 加密，資料庫規則設定為<b>只能新增、不能讀取或修改</b>，'+
+      '網頁端無法回頭查詢任何人的紀錄（包含你自己的）。要查詢或刪除你的資料，請洽輔導處。';
+  } else {
+    el.innerHTML='<b>目前設定：不保存。</b>你輸入的一切只存在於這個瀏覽器分頁的記憶體中，'+
+      '<b>關閉或重新整理即完全消失</b>，不會上傳、不會寫入 Cookie 或本機儲存空間。'+
+      '要留存結果，請使用下方的「列印探索單」或「複製摘要」。';
+  }
+}
+
+/* =============== Firestore 寫入 =============== */
+function buildPayload(res){
+  return {
+    consent:{ agreed:true, version:'pdpa-2026-09', at:new Date().toISOString() },
+    classCode: S.info.cls || '',
+    profile:{
+      name: S.info.name || '',
+      birth: S.info.birth || '',
+      sex: S.info.sex || '',
+      blood: S.info.blood || '',
+      stage: S.info.stage || ''
+    },
+    cultureMode: !!S.info.culture,
+    /* 原始作答，供日後重新計分或量表信效度分析 */
+    answers:{ mbti:S.mbti.slice(), ria:S.ria.slice(), task:S.task.slice() },
+    result:{
+      mbtiCode: res.code,
+      mbtiAxes: { EI:res.M.EI, SN:res.M.SN, TF:res.M.TF, JP:res.M.JP },
+      riasec: res.R,
+      taskPref: res.T,
+      top3: res.top3.slice(),
+      lowest: res.low,
+      maxGap: res.maxGap,
+      alertLevel: (res.maxGap>=35 ? '需要提前關注' : (res.maxGap>=20 ? '建議留意' : '一致性良好')),
+      gaps: res.gaps.map(function(x){ return { key:x.k, gap:x.gap }; }),
+      superStage: { age: res.sup.age, stage: SUPER[res.sup.i].k },
+      culture: res.cul ? { zodiac:res.cul.zod, sheng:res.cul.sheng, blood:res.cul.blood||'' } : null,
+      matches: res.matches.map(function(m){
+        return { no:m.g.no, cat:m.g.cat, name:m.g.name, score:m.score,
+                 hol:m.g.hol, typeHit:!!m.hit };
+      })
+    },
+    meta:{ appVersion:'v2.0-firestore', ua:(navigator.userAgent||'').slice(0,180) }
+  };
+}
+
+function renderSaveBar(){
+  var el=$('#r-save'); if(!el) return;
+  var s=S.save, sc, sbg, tx, busy='', btn='';
+  if(s.state==='off'){
+    sc='var(--rule-strong)'; sbg='var(--sheet-2)';
+    tx='<b>未儲存。</b>你沒有勾選同意欄位，所以這次作答<b>沒有離開這台裝置</b>，也沒有留下任何紀錄。'+
+       '關閉分頁後結果就會消失——請用下方的列印或複製功能自行留存。';
+  } else if(s.state==='saving'){
+    sc='var(--blue)'; sbg='var(--blue-soft)'; busy=' busy';
+    tx='<b>正在送出……</b>把你的作答寫入學校輔導資料庫。';
+  } else if(s.state==='ok'){
+    sc='var(--green)'; sbg='var(--green-soft)';
+    tx='<b>已儲存。</b>你的作答已寫入學校輔導資料庫。若日後要查詢、更正或刪除，'+
+       '請向輔導處提供這組紀錄編號：<code>'+s.id+'</code>';
+  } else {
+    sc='var(--accent)'; sbg='var(--accent-soft)';
+    tx='<b>儲存失敗。</b>'+(s.err||'連線發生問題')+'　你的測驗結果完全不受影響，'+
+       '上面的敘事與配對都是本機算出來的。可以按右邊重試，或直接列印探索單留存。';
+    btn='<button type="button" id="save-retry">重試儲存</button>';
+  }
+  el.innerHTML='<div class="savebar'+busy+'" style="--sc:'+sc+';--sbg:'+sbg+'">'+
+    '<span class="dot"></span><span class="stx">'+tx+'</span>'+btn+'</div>';
+  var r=$('#save-retry');
+  if(r) r.addEventListener('click', function(){ trySave(S.res); });
+}
+
+function trySave(res){
+  if(!res) return;
+  if(!S.info.consent){ S.save={state:'off', id:'', err:''}; renderSaveBar(); return; }
+  if(!window.FBSAVE){
+    S.save={state:'err', id:'', err:'資料庫模組未載入（可能被瀏覽器擴充功能或網路環境阻擋）。'};
+    renderSaveBar(); return;
+  }
+  S.save={state:'saving', id:'', err:''}; renderSaveBar();
+  /* 兩參數形式：成功處理器內若拋錯，不會被誤判為儲存失敗 */
+  window.FBSAVE(buildPayload(res)).then(function(id){
+    S.save={state:'ok', id:id, err:''}; renderSaveBar();
+    toast('已儲存至學校輔導資料庫');
+  }, function(e){
+    var m=(e && (e.code||e.message)) ? String(e.code||e.message) : '未知錯誤';
+    S.save={state:'err', id:'', err:m}; renderSaveBar();
+  });
+}
+
 function peekCulture(){
   var box=$('#cultural-peek');
   var sup=superStage(S.info.birth);
@@ -2241,6 +2411,7 @@ function bind(){
   buildQuestions($('#mbti-q'), MBTI_Q, 'mbti');
   buildQuestions($('#riasec-q'), RIASEC_Q, 'ria');
   buildQuestions($('#task-q'), TASK_Q, 'task');
+  renderPrivacyNote();
   $('#ria-legend').innerHTML=RIA_KEYS.map(function(k){
     return '<li><i>'+k+' '+RIA_NAME[k]+'</i><b>'+RIA_ALIAS[k]+'</b><span>'+RIA_ALIAS_TX[k]+'</span></li>';
   }).join('');
@@ -2251,6 +2422,12 @@ function bind(){
   $('#f-sex').addEventListener('change', function(){ S.info.sex=this.value; });
   $('#f-blood').addEventListener('change', function(){ S.info.blood=this.value; peekCulture(); });
   $('#f-stage').addEventListener('change', function(){ S.info.stage=this.value; });
+  $('#f-class').addEventListener('input', function(){ S.info.cls=this.value.trim().slice(0,20); });
+  $('#f-consent').addEventListener('change', function(){
+    S.info.consent=this.checked;
+    $('#consent-box').classList.toggle('on', this.checked);
+    renderPrivacyNote(); renderReady();
+  });
   $('#culture-sw').addEventListener('click', function(){
     S.info.culture = this.getAttribute('aria-pressed')!=='true';
     this.setAttribute('aria-pressed', S.info.culture?'true':'false');
@@ -2303,6 +2480,56 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 else bind();
 
 })();
+</script>
+
+<!-- ================= FIRESTORE 寫入模組 =================
+     只寫不讀：本模組只呼叫 addDoc，沒有任何讀取 API。
+     即使有人竄改前端，firestore.rules 也已禁止 read/update/delete。
+
+     載入失敗（離線、擴充功能阻擋、公司防火牆）時 window.FBSAVE 不存在，
+     主程式會顯示「儲存失敗」，但測驗與敘事生成完全不受影響——
+     那些都是本機運算。
+     ===================================================== -->
+<script type="module">
+import { initializeApp }   from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import { getAuth, signInAnonymously }
+                           from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+import { getFirestore, collection, addDoc, serverTimestamp }
+                           from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+
+/* apiKey 為公開識別碼，非密鑰。安全性由 firestore.rules 與授權網域把關。
+   刻意不載入 Analytics（measurementId 未使用），避免額外蒐集行為資料。 */
+const firebaseConfig = {
+  apiKey:            "AIzaSyDcRaP0eQTxbg5hULlfCsaKG-NWufX_x58",
+  authDomain:        "ai-career-narrative.firebaseapp.com",
+  projectId:         "ai-career-narrative",
+  storageBucket:     "ai-career-narrative.firebasestorage.app",
+  messagingSenderId: "277456979956",
+  appId:             "1:277456979956:web:f3bfd00b93d8871514dba1"
+};
+const COLLECTION = 'submissions';
+
+/* 延遲初始化：未勾選同意的使用者，全程不會與 Firebase 建立任何連線，
+   也不會產生匿名 uid。 */
+let ready = null;
+function connect(){
+  if(!ready){
+    ready = (async () => {
+      const app  = initializeApp(firebaseConfig);
+      const cred = await signInAnonymously(getAuth(app));
+      return { db: getFirestore(app), uid: cred.user.uid };
+    })().catch(err => { ready = null; throw err; });
+  }
+  return ready;
+}
+
+window.FBSAVE = async function(payload){
+  const { db, uid } = await connect();
+  payload.meta.uid = uid;                    // 規則會比對此值與 request.auth.uid
+  payload.meta.createdAt = serverTimestamp();
+  const ref = await addDoc(collection(db, COLLECTION), payload);
+  return ref.id;
+};
 </script>
 </body>
 </html>

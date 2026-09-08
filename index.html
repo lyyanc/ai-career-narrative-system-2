@@ -514,6 +514,14 @@ input,select,textarea{font:inherit; color:inherit}
 .consent-more li{font-size:12.7px; color:var(--ink-soft); line-height:1.8; margin-bottom:9px}
 .consent-more li b{color:var(--ink)}
 
+/* ============ RECAPTCHA ============ */
+/* 隱藏右下角浮動徽章。Google 條款允許隱藏，但要求改以文字聲明替代——
+   聲明見 .rc-note（儲存狀態區）與同意書告知事項第 8 條，兩處皆為可見文字。 */
+.grecaptcha-badge{visibility:hidden !important}
+.rc-note{font-size:11.5px; color:var(--ink-faint); line-height:1.7; margin-top:10px}
+.rc-note a{color:var(--ink-faint); text-decoration:underline}
+.rc-note a:hover{color:var(--accent)}
+
 /* ============ SAVE STATUS ============ */
 .savebar{display:flex; align-items:center; gap:13px; padding:14px 17px; border:1.5px solid var(--sc); background:var(--sbg); flex-wrap:wrap}
 .savebar .dot{width:9px; height:9px; border-radius:50%; background:var(--sc); flex-shrink:0}
@@ -2397,8 +2405,15 @@ function renderSaveBar(){
        '上面的敘事與配對都是本機算出來的。可以按右邊重試，或直接列印探索單留存。';
     btn='<button type="button" id="save-retry">重試儲存</button>';
   }
+  /* reCAPTCHA 文字聲明（Google 條款要求：隱藏徽章者須以可見文字替代）。
+     只在確實載入了 reCAPTCHA 的情況顯示，也就是使用者已同意並送出。 */
+  var rc = (s.state==='off') ? '' :
+    '<p class="rc-note">本頁的送出動作受 reCAPTCHA 保護，適用 Google 的'+
+    '<a href="https://policies.google.com/privacy" target="_blank" rel="noopener">隱私權政策</a>與'+
+    '<a href="https://policies.google.com/terms" target="_blank" rel="noopener">服務條款</a>。</p>';
+
   el.innerHTML='<div class="savebar'+busy+'" style="--sc:'+sc+';--sbg:'+sbg+'">'+
-    '<span class="dot"></span><span class="stx">'+tx+'</span>'+btn+'</div>';
+    '<span class="dot"></span><span class="stx">'+tx+'</span>'+btn+'</div>'+rc;
   var r=$('#save-retry');
   if(r) r.addEventListener('click', function(){ trySave(S.res); });
 }
@@ -2548,7 +2563,7 @@ const COLLECTION = 'submissions';
 
    留空時自動停用 App Check，網站照常運作，方便在尚未完成
    reCAPTCHA 註冊前先行部署。 */
-const RECAPTCHA_SITE_KEY = '';
+const RECAPTCHA_SITE_KEY = '6LeQbK8tAAAAAL0vcfv8swl2pVtS310hLMNyd8IC';
 
 /* 延遲初始化：未勾選同意的使用者，全程不會與 Firebase 建立任何連線，
    不會產生匿名 uid，也不會載入 reCAPTCHA 腳本。 */

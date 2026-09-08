@@ -85,7 +85,11 @@ Firebase 的 apiKey 本來就是公開識別碼而非密鑰，真正的門鎖是
 
 以 reCAPTCHA v3 驗證請求確實來自本網站，擋掉繞過網頁直接打 API 的腳本。
 site key 填在 `index.html` 的 `RECAPTCHA_SITE_KEY`；**留空則自動停用**，
-網站照常運作。
+網站照常運作。secret key 只存在 Firebase Console，不進 repo。
+
+reCAPTCHA 右下角的浮動徽章已用 CSS 隱藏。Google 條款允許隱藏，但要求改以可見文字聲明替代，
+本站的替代聲明有兩處：儲存狀態區的 `.rc-note`，以及同意書告知事項第 8 條。
+**若日後移除這兩處文字，必須把徽章改回顯示**，否則違反 reCAPTCHA 服務條款。
 
 > **隱私取捨：**reCAPTCHA 會蒐集 IP 與瀏覽器操作行為，適用 Google 隱私權政策。
 > 因此它只在使用者**勾選同意並送出時**才載入 —— 未同意者全程不會載入 reCAPTCHA，

@@ -879,7 +879,9 @@ input,select,textarea{font:inherit; color:inherit}
                 <li><b>蒐集目的：</b>學生生涯輔導、職業試探與技高群科選擇之諮詢；以及去識別化後的教學研究與成效分析。</li>
                 <li><b>個人資料類別：</b>姓名、出生年月日、性別、血型、就讀階段、班級代碼，以及 MBTI、RIASEC
                   與真實任務偏好三份量表的原始作答與計算結果。</li>
-                <li><b>利用期間：</b>自蒐集之日起，至你畢業後兩年止，屆期由學校刪除。</li>
+                <li><b>利用期間：</b>自蒐集之日起，至你畢業後兩年止。系統會依你填寫的就讀階段，
+                  在寫入時就記下確切的到期日<span id="ttl-date"></span>，
+                  <b>由資料庫自動刪除，不需要任何人記得去清</b>。</li>
                 <li><b>利用地區：</b>資料儲存於 Google Firebase 位在<b>台灣（asia-east1）</b>的資料中心。</li>
                 <li><b>利用對象與方式：</b>僅限本校輔導處與授課教師，以電子檔方式閱覽與統計。
                   <b>不會提供給校外第三方，也不會用於商業目的。</b></li>
@@ -887,6 +889,11 @@ input,select,textarea{font:inherit; color:inherit}
                   或請求刪除你的資料，不需要說明理由。</li>
                 <li><b>不提供的影響：</b>你可以自由選擇不勾選。不勾選<b>不會影響你使用本系統的任何功能</b>，
                   也不會影響你的成績、選填志願或任何權益。</li>
+                <li><b>防濫用機制：</b>為避免有人以程式灌入大量假資料，勾選同意並送出時，
+                  系統會載入 Google reCAPTCHA 進行機器人偵測。這個機制會蒐集你的
+                  IP 位址與瀏覽器操作行為，並適用
+                  <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google 隱私權政策</a>。
+                  <b>不勾選同意的話，reCAPTCHA 完全不會載入。</b></li>
                 <li><b>未成年學生請注意：</b>若你未滿 18 歲，請在勾選前<b>先讓家長或監護人知悉</b>。
                   學校另有紙本同意書，以紙本同意書為準。</li>
               </ol>
@@ -2297,6 +2304,12 @@ function resetAll(){
 /* =============== 星座生肖即時預覽 =============== */
 /* =============== 隱私狀態說明（隨同意勾選改變） =============== */
 function renderPrivacyNote(){
+  var t=$('#ttl-date');
+  if(t){
+    var d=retentionDate();
+    t.innerHTML='（依你目前選的「'+esc(S.info.stage)+'」推算為 <b>'+
+      d.getFullYear()+' 年 '+(d.getMonth()+1)+' 月 '+d.getDate()+' 日</b>）';
+  }
   var el=$('#privacy-note'); if(!el) return;
   if(S.info.consent){
     el.innerHTML='<b>目前設定：會保存。</b>送出後，你的基本資料、原始作答與計算結果會寫入學校的輔導資料庫'+
@@ -2309,9 +2322,28 @@ function renderPrivacyNote(){
   }
 }
 
+/* =============== 保存期限（TTL）===============
+   告知事項承諾「至畢業後兩年止」。這裡把它算成一個實際日期，
+   寫入 expiresAt 欄位，由 Firestore 的 TTL 政策自動刪除，
+   不依賴任何人記得去清。 */
+var YEARS_TO_GRAD = {
+  '國中七年級':2, '國中八年級':1, '國中九年級':0,
+  '技高一年級':2, '技高二年級':1, '技高三年級':0
+};
+function retentionDate(){
+  var now=new Date();
+  /* 台灣學年度 8 月起算：8 月之後，本學年度結束於次年 6 月 */
+  var acadEnd = now.getFullYear() + (now.getMonth() >= 7 ? 1 : 0);
+  var left = YEARS_TO_GRAD[S.info.stage];
+  if(left === undefined) left = 0;          /* 家長 / 教師 / 其他 */
+  /* 畢業年 + 2 年，取該年 7 月 31 日 */
+  return new Date(acadEnd + left + 2, 6, 31, 23, 59, 59);
+}
+
 /* =============== Firestore 寫入 =============== */
 function buildPayload(res){
   return {
+    expiresAt: retentionDate(),
     consent:{ agreed:true, version:'pdpa-2026-09', at:new Date().toISOString() },
     classCode: S.info.cls || '',
     profile:{
@@ -2421,7 +2453,7 @@ function bind(){
   $('#f-birth').addEventListener('change', function(){ S.info.birth=this.value; peekCulture(); });
   $('#f-sex').addEventListener('change', function(){ S.info.sex=this.value; });
   $('#f-blood').addEventListener('change', function(){ S.info.blood=this.value; peekCulture(); });
-  $('#f-stage').addEventListener('change', function(){ S.info.stage=this.value; });
+  $('#f-stage').addEventListener('change', function(){ S.info.stage=this.value; renderPrivacyNote(); });
   $('#f-class').addEventListener('input', function(){ S.info.cls=this.value.trim().slice(0,20); });
   $('#f-consent').addEventListener('change', function(){
     S.info.consent=this.checked;
@@ -2496,6 +2528,8 @@ import { getAuth, signInAnonymously }
                            from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getFirestore, collection, addDoc, serverTimestamp }
                            from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+import { initializeAppCheck, ReCaptchaV3Provider }
+                           from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app-check.js';
 
 /* apiKey 為公開識別碼，非密鑰。安全性由 firestore.rules 與授權網域把關。
    刻意不載入 Analytics（measurementId 未使用），避免額外蒐集行為資料。 */
@@ -2509,13 +2543,27 @@ const firebaseConfig = {
 };
 const COLLECTION = 'submissions';
 
+/* App Check（reCAPTCHA v3）——防止有人寫腳本繞過網頁灌入假資料。
+   site key 為公開值，可安全寫在前端；secret key 只存在 Firebase Console。
+
+   留空時自動停用 App Check，網站照常運作，方便在尚未完成
+   reCAPTCHA 註冊前先行部署。 */
+const RECAPTCHA_SITE_KEY = '';
+
 /* 延遲初始化：未勾選同意的使用者，全程不會與 Firebase 建立任何連線，
-   也不會產生匿名 uid。 */
+   不會產生匿名 uid，也不會載入 reCAPTCHA 腳本。 */
 let ready = null;
 function connect(){
   if(!ready){
     ready = (async () => {
-      const app  = initializeApp(firebaseConfig);
+      const app = initializeApp(firebaseConfig);
+      /* App Check 必須在任何 Auth / Firestore 呼叫之前初始化 */
+      if(RECAPTCHA_SITE_KEY){
+        initializeAppCheck(app, {
+          provider: new ReCaptchaV3Provider(RECAPTCHA_SITE_KEY),
+          isTokenAutoRefreshEnabled: true
+        });
+      }
       const cred = await signInAnonymously(getAuth(app));
       return { db: getFirestore(app), uid: cred.user.uid };
     })().catch(err => { ready = null; throw err; });

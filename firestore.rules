@@ -27,7 +27,8 @@ service cloud.firestore {
                     && isOwnDocument()
                     && hasConsent()
                     && hasExpectedShape()
-                    && withinSizeLimits();
+                    && withinSizeLimits()
+                    && hasValidRetention();
     }
 
     // 未明確列出的路徑一律拒絕
@@ -60,7 +61,7 @@ service cloud.firestore {
   function hasExpectedShape() {
     return request.resource.data.keys().hasOnly([
              'consent', 'classCode', 'profile', 'cultureMode',
-             'answers', 'result', 'meta'
+             'answers', 'result', 'meta', 'expiresAt'
            ])
         && request.resource.data.classCode is string
         && request.resource.data.profile.name is string
@@ -68,6 +69,16 @@ service cloud.firestore {
         && request.resource.data.answers.ria is list
         && request.resource.data.answers.task is list
         && request.resource.data.result.mbtiCode is string;
+  }
+
+  // TTL 保存期限檢查。
+  //   expiresAt 是 Firestore TTL 政策的依據欄位，到期後由 Firestore 自動刪除。
+  //   下界：必須晚於此刻，防止寫入已過期的垃圾文件。
+  //   上界：最多 10 年，防止有人把期限設成西元 9999 年來規避刪除。
+  function hasValidRetention() {
+    return request.resource.data.expiresAt is timestamp
+        && request.resource.data.expiresAt > request.time
+        && request.resource.data.expiresAt < request.time + duration.value(3650, 'd');
   }
 
   // 長度上限，避免有人灌入大量垃圾資料把配額吃光。

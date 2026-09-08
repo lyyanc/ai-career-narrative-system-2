@@ -83,7 +83,12 @@ Firebase 的 apiKey 本來就是公開識別碼而非密鑰，真正的門鎖是
 
 ### App Check（防灌假資料）
 
-以 reCAPTCHA v3 驗證請求確實來自本網站，擋掉繞過網頁直接打 API 的腳本。
+以 **reCAPTCHA Enterprise** 驗證請求確實來自本網站，擋掉繞過網頁直接打 API 的腳本。
+
+> **provider 必須前後一致。**Enterprise 與傳統 v3 的金鑰不能互換：Enterprise 金鑰丟進
+> 傳統 `api.js` 會被拒為 `Invalid site key`。程式碼用 `ReCaptchaEnterpriseProvider`，
+> Firebase Console 的 App Check 也必須註冊為 reCAPTCHA Enterprise。
+> Enterprise 每月 10,000 次評估免費，超過需在 Google Cloud 專案啟用計費。
 site key 填在 `index.html` 的 `RECAPTCHA_SITE_KEY`；**留空則自動停用**，
 網站照常運作。secret key 只存在 Firebase Console，不進 repo。
 

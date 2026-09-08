@@ -2543,7 +2543,7 @@ import { getAuth, signInAnonymously }
                            from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getFirestore, collection, addDoc, serverTimestamp }
                            from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
-import { initializeAppCheck, ReCaptchaV3Provider }
+import { initializeAppCheck, ReCaptchaEnterpriseProvider }
                            from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app-check.js';
 
 /* apiKey 為公開識別碼，非密鑰。安全性由 firestore.rules 與授權網域把關。
@@ -2558,8 +2558,12 @@ const firebaseConfig = {
 };
 const COLLECTION = 'submissions';
 
-/* App Check（reCAPTCHA v3）——防止有人寫腳本繞過網頁灌入假資料。
-   site key 為公開值，可安全寫在前端；secret key 只存在 Firebase Console。
+/* App Check（reCAPTCHA Enterprise）——防止有人寫腳本繞過網頁灌入假資料。
+   site key 為公開值，可安全寫在前端。
+
+   注意：這裡用的是 Enterprise 而非傳統 v3。兩者的 provider 不能互換——
+   Enterprise 金鑰在傳統 api.js 會被拒為 Invalid site key，反之亦然。
+   Firebase Console 的 App Check 也必須註冊為同一種 provider。
 
    留空時自動停用 App Check，網站照常運作，方便在尚未完成
    reCAPTCHA 註冊前先行部署。 */
@@ -2575,7 +2579,7 @@ function connect(){
       /* App Check 必須在任何 Auth / Firestore 呼叫之前初始化 */
       if(RECAPTCHA_SITE_KEY){
         initializeAppCheck(app, {
-          provider: new ReCaptchaV3Provider(RECAPTCHA_SITE_KEY),
+          provider: new ReCaptchaEnterpriseProvider(RECAPTCHA_SITE_KEY),
           isTokenAutoRefreshEnabled: true
         });
       }

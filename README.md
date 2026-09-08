@@ -101,8 +101,9 @@ site key 填在 `index.html` 的 `RECAPTCHA_SITE_KEY`；**留空則自動停用*
 - **AI 是翻譯引擎，不是決策工具。** 系統產出「值得去看看的方向」，不產出「你只能走的路」。
 - **文化趣味模式可開關。** 星座、生肖、血型與命理語彙只作為家長與學生的參與入口，
   並提供「家長焦慮轉譯對照表」，**完全不參與群科配對計算**。各校可依校風關閉。
-- **個資最小化。** 無登入、無後端、無資料庫、無 Cookie、無 localStorage、無追蹤。
-  所有運算在瀏覽器記憶體內完成，關閉分頁即銷毀。唯一的外部請求是 Google Fonts 字型檔，不含任何個人資料。
+- **個資最小化，且保存與否由學生決定。** 無登入、無 Cookie、無 localStorage、無分析追蹤。
+  計分與敘事生成全部在瀏覽器記憶體內完成。未勾選同意者不上傳、不連線 Firebase、不載入 reCAPTCHA，
+  關閉分頁即銷毀；勾選者才寫入學校輔導資料庫，並於畢業後兩年自動刪除。
 
 ## 使用限制
 
@@ -117,11 +118,13 @@ site key 填在 `index.html` 的 `RECAPTCHA_SITE_KEY`；**留空則自動停用*
 
 ```
 .
-├── index.html          # 完整網站（HTML + CSS + JS）
-├── og-image.png        # 1200×630 社群分享圖
-├── vercel.json         # Vercel 靜態託管設定與安全標頭
+├── index.html                    # 完整網站（HTML + CSS + JS + Firebase 模組）
+├── og-image.png                  # 1200×630 社群分享圖
+├── firestore.rules               # Firestore 安全規則（貼進 Console）
+├── firebase-config.template.js   # Firebase 設定值填寫範本
+├── vercel.json                   # Vercel 靜態託管設定與安全標頭
 ├── tools/
-│   └── make-og.ps1     # 重新產生 og-image.png
+│   └── make-og.ps1               # 重新產生 og-image.png
 └── README.md
 ```
 

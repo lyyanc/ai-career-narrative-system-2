@@ -89,8 +89,20 @@ Firebase 的 apiKey 本來就是公開識別碼而非密鑰，真正的門鎖是
 > 傳統 `api.js` 會被拒為 `Invalid site key`。程式碼用 `ReCaptchaEnterpriseProvider`，
 > Firebase Console 的 App Check 也必須註冊為 reCAPTCHA Enterprise。
 > Enterprise 每月 10,000 次評估免費，超過需在 Google Cloud 專案啟用計費。
-site key 填在 `index.html` 的 `RECAPTCHA_SITE_KEY`；**留空則自動停用**，
-網站照常運作。secret key 只存在 Firebase Console，不進 repo。
+**目前狀態：停用中。**`index.html` 裡的 `window.RECAPTCHA_SITE_KEY` 留空即停用，網站照常運作。
+
+停用原因：專案中兩把 reCAPTCHA 金鑰各缺一半 —— 一把能產生 token 但 Firebase 無法
+assess（疑似建於另一個 Cloud 專案），另一把已在 Firebase 註冊卻連 token 都產不出來
+（傳統與 Enterprise API 皆回 `Invalid site key`）。在釐清前先行停用，避免無效的錯誤請求。
+
+**要重新啟用**：在 Google Cloud Console 的 `ai-career-narrative` 專案中建立一把
+**Score-based 網站金鑰**，網域填 `ai-career-narrative-system-2.vercel.app`，
+同時填入 `window.RECAPTCHA_SITE_KEY` 與 Firebase App Check。兩邊必須是同一把。
+
+> **`window.RECAPTCHA_SITE_KEY` 是單一真實來源。**填入值即自動啟用 App Check、
+> 顯示 reCAPTCHA 文字聲明、並顯示告知事項第 8 條；留空則三者一併消失。
+> 這樣就不會出現「已停用卻仍告訴學生會載入 reCAPTCHA」的不實告知。
+> **修改時請維持這個連動，不要把金鑰另外寫死在模組裡。**
 
 reCAPTCHA 右下角的浮動徽章已用 CSS 隱藏。Google 條款允許隱藏，但要求改以可見文字聲明替代，
 本站的替代聲明有兩處：儲存狀態區的 `.rc-note`，以及同意書告知事項第 8 條。

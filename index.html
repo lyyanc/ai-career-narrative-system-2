@@ -897,7 +897,7 @@ input,select,textarea{font:inherit; color:inherit}
                   或請求刪除你的資料，不需要說明理由。</li>
                 <li><b>不提供的影響：</b>你可以自由選擇不勾選。不勾選<b>不會影響你使用本系統的任何功能</b>，
                   也不會影響你的成績、選填志願或任何權益。</li>
-                <li><b>防濫用機制：</b>為避免有人以程式灌入大量假資料，勾選同意並送出時，
+                <li id="li-recaptcha"><b>防濫用機制：</b>為避免有人以程式灌入大量假資料，勾選同意並送出時，
                   系統會載入 Google reCAPTCHA 進行機器人偵測。這個機制會蒐集你的
                   IP 位址與瀏覽器操作行為，並適用
                   <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google 隱私權政策</a>。
@@ -1663,6 +1663,12 @@ var BLOOD_TX = {
 };
 
 /* =============== STATE（僅存在於記憶體） =============== */
+/* App Check 金鑰。留空＝停用 App Check。
+   這是唯一的真實來源：模組端讀這個值，告知事項與聲明文字也依它顯示，
+   避免出現「已停用卻仍告訴學生會載入 reCAPTCHA」的不實陳述。 */
+window.RECAPTCHA_SITE_KEY = '';
+function appCheckOn(){ return !!window.RECAPTCHA_SITE_KEY; }
+
 var S = {
   step:0,
   info:{name:'', birth:'', sex:'', blood:'', stage:'國中九年級', cls:'', culture:true, consent:false},
@@ -2407,7 +2413,7 @@ function renderSaveBar(){
   }
   /* reCAPTCHA 文字聲明（Google 條款要求：隱藏徽章者須以可見文字替代）。
      只在確實載入了 reCAPTCHA 的情況顯示，也就是使用者已同意並送出。 */
-  var rc = (s.state==='off') ? '' :
+  var rc = (s.state==='off' || !appCheckOn()) ? '' :
     '<p class="rc-note">本頁的送出動作受 reCAPTCHA 保護，適用 Google 的'+
     '<a href="https://policies.google.com/privacy" target="_blank" rel="noopener">隱私權政策</a>與'+
     '<a href="https://policies.google.com/terms" target="_blank" rel="noopener">服務條款</a>。</p>';
@@ -2458,6 +2464,7 @@ function bind(){
   buildQuestions($('#mbti-q'), MBTI_Q, 'mbti');
   buildQuestions($('#riasec-q'), RIASEC_Q, 'ria');
   buildQuestions($('#task-q'), TASK_Q, 'task');
+  var liRc=$('#li-recaptcha'); if(liRc) liRc.hidden = !appCheckOn();
   renderPrivacyNote();
   $('#ria-legend').innerHTML=RIA_KEYS.map(function(k){
     return '<li><i>'+k+' '+RIA_NAME[k]+'</i><b>'+RIA_ALIAS[k]+'</b><span>'+RIA_ALIAS_TX[k]+'</span></li>';
@@ -2567,7 +2574,7 @@ const COLLECTION = 'submissions';
 
    留空時自動停用 App Check，網站照常運作，方便在尚未完成
    reCAPTCHA 註冊前先行部署。 */
-const RECAPTCHA_SITE_KEY = '6LeQbK8tAAAAAL0vcfv8swl2pVtS310hLMNyd8IC';
+const RECAPTCHA_SITE_KEY = window.RECAPTCHA_SITE_KEY || '';
 
 /* 延遲初始化：未勾選同意的使用者，全程不會與 Firebase 建立任何連線，
    不會產生匿名 uid，也不會載入 reCAPTCHA 腳本。 */
